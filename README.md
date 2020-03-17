@@ -1,2 +1,2 @@
 # nuar-online
-unity 3dD based Noir board game with multiplayer
+Unity 3D based Noir board game with multiplayer
