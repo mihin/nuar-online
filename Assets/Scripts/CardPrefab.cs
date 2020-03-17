@@ -16,16 +16,21 @@ public class CardPrefab : MonoBehaviour
         set { card = value; text.text = card.name; }
     }
 
-    // Start is called before the first frame update
+    public bool alive;
+    //public bool Alive
+    //{
+    //    get { return alive; }
+    //    set { alive = value; image.color = value?Color.white:Color.red; }
+    //}
+
     void Start()
     {
-        
+        alive = true;
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        image.color = alive ? Color.white : Color.red;
     }
 
     public class Factory : PlaceholderFactory<CardPrefab>
