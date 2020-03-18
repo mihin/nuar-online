@@ -33,6 +33,18 @@ public class CardPrefab : MonoBehaviour
         image.color = alive ? Color.white : Color.red;
     }
 
+    public void PointerEnter()
+    {
+        if (alive)
+            transform.localScale += new Vector3(0.2f, 0.2f, 0);
+    }
+
+    public void PointerExit()
+    {
+        if (alive)
+            transform.localScale -= new Vector3(0.2f, 0.2f, 0);
+    }
+
     public class Factory : PlaceholderFactory<CardPrefab>
     {
     }
