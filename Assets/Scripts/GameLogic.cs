@@ -28,12 +28,24 @@ public class GameLogic : MonoBehaviour
 
     void Start()
     {
+        gui.HandleHide();
         InitCardsData();
         OnGameStateChange(EGameState.IDLE);
     }
 
     void Update()
     {
+
+    }
+
+    void OnEnable()
+    {
+        gui.OnGameStartEvent += OnGameStartClick;
+    }
+
+    void OnDisable()
+    {
+        gui.OnGameStartEvent -= OnGameStartClick;
 
     }
 
@@ -48,6 +60,10 @@ public class GameLogic : MonoBehaviour
             case EGameState.IDLE:
                 RefreshGraphics();
                 InitPlayers();
+                Invoke("ShowStartGameGUI", 1);
+                break;
+            case EGameState.TURN_IDLE:
+                Invoke("ShowMakeTurnGUI", 1);
                 break;
             default:
                 break;
@@ -55,8 +71,14 @@ public class GameLogic : MonoBehaviour
 
         currState = newState;
         Debug.Log("OnGameStateChange " + currState);
-
     }
+
+    void OnGameStartClick()
+    {
+        OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
+    }
+
+
 
     void InitCardsData()
     {
@@ -90,6 +112,16 @@ public class GameLogic : MonoBehaviour
                 count++;
             }
         }
+    }
+
+    void ShowStartGameGUI()
+    {
+        gui.HandleGameInit();
+    }
+
+    void ShowMakeTurnGUI()
+    {
+        gui.HandleTurnStart();
     }
 
 }

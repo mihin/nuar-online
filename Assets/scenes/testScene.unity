@@ -112,13 +112,19 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &44990263 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9181957746111263255, guid: e29246fb83f7d42e18a341968d03cfde,
+    type: 3}
+  m_PrefabInstance: {fileID: 9181957746283410278}
+  m_PrefabAsset: {fileID: 0}
 --- !u!114 &44990264 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 9181957746111263253, guid: e29246fb83f7d42e18a341968d03cfde,
     type: 3}
   m_PrefabInstance: {fileID: 9181957746283410278}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 44990263}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 15b6885f4994e4e299a578b80e905ed7, type: 3}
@@ -659,5 +665,25 @@ PrefabInstance:
       propertyPath: m_Pivot.y
       value: 0.5
       objectReference: {fileID: 0}
+    - target: {fileID: 3406649492382471046, guid: e29246fb83f7d42e18a341968d03cfde,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3406649492382471046, guid: e29246fb83f7d42e18a341968d03cfde,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3406649492382471046, guid: e29246fb83f7d42e18a341968d03cfde,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 3406649492382471046, guid: e29246fb83f7d42e18a341968d03cfde,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 44990263}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e29246fb83f7d42e18a341968d03cfde, type: 3}
