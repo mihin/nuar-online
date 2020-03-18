@@ -40,13 +40,18 @@ public class GameLogic : MonoBehaviour
 
     void OnEnable()
     {
-        gui.OnGameStartEvent += OnGameStartClick;
+        gui.OnGameStartEvent += GameStartClickHandler;
+        gui.OnMoveChosenEvent += MoveChosenHandler;
+        gui.OnShootChosenEvent += ShootChosenHandler;
+        gui.OnAskChosenEvent += AskChosenHandler;
     }
 
     void OnDisable()
     {
-        gui.OnGameStartEvent -= OnGameStartClick;
-
+        gui.OnGameStartEvent -= GameStartClickHandler;
+        gui.OnMoveChosenEvent -= MoveChosenHandler;
+        gui.OnShootChosenEvent -= ShootChosenHandler;
+        gui.OnAskChosenEvent -= AskChosenHandler;
     }
 
 
@@ -65,6 +70,15 @@ public class GameLogic : MonoBehaviour
             case EGameState.TURN_IDLE:
                 Invoke("ShowMakeTurnGUI", 1);
                 break;
+            case EGameState.TURN_SHOOT:
+                gui.HandleShootMode();
+                break;
+            case EGameState.TURN_ASK:
+                gui.HandleAskMode();
+                break;
+            case EGameState.TURN_MOVE:
+                gui.HandleMoveMode();
+                break;
             default:
                 break;
         }
@@ -73,9 +87,21 @@ public class GameLogic : MonoBehaviour
         Debug.Log("OnGameStateChange " + currState);
     }
 
-    void OnGameStartClick()
+    void GameStartClickHandler()
     {
         OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
+    }
+    void ShootChosenHandler()
+    {
+        OnGameStateChange(EGameState.TURN_SHOOT);
+    }
+    void AskChosenHandler()
+    {
+        OnGameStateChange(EGameState.TURN_ASK);
+    }
+    void MoveChosenHandler()
+    {
+        OnGameStateChange(EGameState.TURN_MOVE);
     }
 
 
