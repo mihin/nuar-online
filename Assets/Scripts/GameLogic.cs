@@ -18,14 +18,47 @@ public class GameLogic : MonoBehaviour
 
     [SerializeField] private EGameState currState = EGameState.NONE;
 
-    [SerializeField] private int playedId;  // Player number 0..MAX_PLAYERS-1
+    [SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
     [SerializeField] private GridLayoutGroup grid;
+    [SerializeField] private GameGUI gui;
     [Inject] private CardsScriptableObject CardsData;
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
 
-    // Start is called before the first frame update
+
     void Start()
+    {
+        InitCardsData();
+        OnGameStateChange(EGameState.IDLE);
+    }
+
+    void Update()
+    {
+
+    }
+
+
+    void OnGameStateChange(EGameState newState)
+    {
+        if (newState == currState)
+            return;
+
+        switch (newState)
+        {
+            case EGameState.IDLE:
+                RefreshGraphics();
+                InitPlayers();
+                break;
+            default:
+                break;
+        }
+
+        currState = newState;
+        Debug.Log("OnGameStateChange " + currState);
+
+    }
+
+    void InitCardsData()
     {
         for (int i = 0; i < width; i++)
         {
@@ -34,14 +67,7 @@ public class GameLogic : MonoBehaviour
                 cards[i, j] = CardsData.Cards[UnityEngine.Random.Range(0, CardsData.Cards.Count)];
             }
         }
-
-        RefreshGraphics();
-
-        currState = EGameState.IDLE;
-
-        InitPlayers();
     }
-
 
     void InitPlayers()
     {
@@ -66,9 +92,4 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }
