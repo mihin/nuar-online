@@ -13,8 +13,8 @@ public class GameLogic : MonoBehaviour
     private int height = MAX_HEIGHT;
     private Card[,] cards = new Card[MAX_WIDTH, MAX_HEIGHT];
     private List<Card> deck = new List<Card>(MAX_WIDTH * MAX_HEIGHT);
-    private List<CardPrefab> cardPrefabs = new List<CardPrefab>();
-    private int localXPos = -1, localYPos = -1;
+    private List<CardPrefab> prefabs = new List<CardPrefab>();
+    private Dictionary<Card, CardPrefab> cardToPrefab = new Dictionary<Card, CardPrefab>();
 
     [SerializeField] private GridLayoutGroup grid;
     [SerializeField] private GameGUI gui;
@@ -36,13 +36,15 @@ public class GameLogic : MonoBehaviour
 
     [SerializeField] private EGameState currState = EGameState.NONE;
     private List<Player> Players;
-    public List<Transform> PlayerPositions = new List<Transform>();
+    private List<Vector2> playersGridPos;
+    public List<Transform> PlayerDeckPositions = new List<Transform>();
     //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
     protected void Awake()
     {
-        MAX_PLAYERS = Mathf.Min(PlayerPositions.Count, MAX_PLAYERS);
+        MAX_PLAYERS = Mathf.Min(PlayerDeckPositions.Count, MAX_PLAYERS);
         Players = new List<Player>(MAX_PLAYERS);
+        playersGridPos = new List<Vector2>(MAX_PLAYERS);
 
         InitCardsData();
         OnGameStateChange(EGameState.IDLE);
@@ -88,7 +90,8 @@ void OnGameStateChange(EGameState newState)
                 gui.HandleHide();
                 CheckPlayers();
                 Invoke("ShowStartGameGUI", 1);
-                break;
+                currState = newState;
+                return;
             case EGameState.ERROR:
                 DisplayError();
                 return;
@@ -198,7 +201,7 @@ void OnGameStateChange(EGameState newState)
         Player localPlayer = new Player();
         localPlayer.PlayerId = "offline-player";
         localPlayer.PlayerName = "Player1";
-        localPlayer.Position = PlayerPositions[0].position;
+        localPlayer.Position = PlayerDeckPositions[0].position;
         //localPlayer.BookPosition = BookPositions[0].position;
         Players.Add(localPlayer);
 
@@ -206,7 +209,7 @@ void OnGameStateChange(EGameState newState)
         Player remotePlayer = new Player();
         remotePlayer.PlayerId = "offline-bot";
         remotePlayer.PlayerName = "Bot1";
-        remotePlayer.Position = PlayerPositions[1].position;
+        remotePlayer.Position = PlayerDeckPositions[1].position;
         //remotePlayer.BookPosition = BookPositions[1].position;
         remotePlayer.IsAI = true;
 
@@ -215,27 +218,61 @@ void OnGameStateChange(EGameState newState)
 
     void RefreshGraphics()
     {
+        int localXPos = (int)playersGridPos[activePlayerId].x;
+        int localYPos = (int)playersGridPos[activePlayerId].y;
+
+
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                CardPrefab cardPrefabs = cardToPrefab[cards[i, j]];
+
+                cardPrefabs.isActive = (currState == EGameState.TURN_ASK || currState == EGameState.TURN_SHOOT) &&
+                    (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
+
+                cardPrefabs.RefreshGraphics();
+            }
+        }
+    }
+
+    void UpdateField()
+    {
+        cardToPrefab.Clear();
+
         int count = 0;
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
             {
-                if (cardPrefabs.Count <= count)
+                if (prefabs.Count <= count)
                 {
                     CardPrefab c = CardsPrefabFactory.Create();
                     c.enabled = false;
-                    cardPrefabs.Add(c);
+                    prefabs.Add(c);
 
                     c.OnCardClickEvent += CardClickHandler;
                 }
-                cardPrefabs[count].Card = cards[i, j];
-                cardPrefabs[count].isMy = localXPos == i && localYPos == j;
-                cardPrefabs[count].isActive = (currState == EGameState.TURN_ASK || currState == EGameState.TURN_SHOOT) &&
-                    (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
-                cardPrefabs[count].RefreshGraphics();
+
+                cardToPrefab.Add(cards[i, j], prefabs[count]);
+                prefabs[count].Card = cards[i, j];
+
+                if (ActivePlayer.Card == cards[i, j])
+                {
+                    prefabs[count].isMy = true;
+                    //playersGridPos[activePlayerId] = new Vector2(i, j);
+                    playersGridPos.Insert(activePlayerId, new Vector2(i, j));
+                    //playersGridPos.Add(new Vector2(i, j));
+                }
+                else
+                {
+                    prefabs[count].isMy = false;
+                }
+
                 count++;
             }
         }
+
     }
 
     void DisplayError()
@@ -263,25 +300,15 @@ void OnGameStateChange(EGameState newState)
     {
         for (int i = 0; i < totalPlayers; i++)
         {
-            Players[i].PlayerRole = GetTopDeck();
+            Players[i].Card = GetTopDeck();
         }
 
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                if (cards[i, j].name == ActivePlayer.PlayerRole.name)
-                {
-                    localXPos = i;
-                    localYPos = j;
-                    return;
-                }
-            }
-        }
+        UpdateField();
     }
 
     void TurnFinish()
     {
+
         if (ActivePlayer.NumberOfFrags > 3)
         {
             OnGameStateChange(EGameState.GAME_FINISH);
@@ -289,12 +316,14 @@ void OnGameStateChange(EGameState newState)
         }
 
         activePlayerId = ++activePlayerId % totalPlayers;
+        UpdateField();
+
         OnGameStateChange(EGameState.TURN_IDLE);
     }
 
     void EnableCards(bool enable = true)
     {
-        foreach (CardPrefab card in cardPrefabs)
+        foreach (CardPrefab card in prefabs)
         {
             card.enabled = enable;
         }

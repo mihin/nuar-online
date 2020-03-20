@@ -46,21 +46,7 @@ MonoBehaviour:
   grid: {fileID: 0}
   gui: {fileID: 0}
   currState: 0
-  localPlayer:
-    PlayerId: 
-    PlayerName: 
-    IsAI: 0
-    Position: {x: 0, y: 0}
-    BookPosition: {x: 0, y: 0}
-    DisplayingCards: []
-  remotePlayer:
-    PlayerId: 
-    PlayerName: 
-    IsAI: 0
-    Position: {x: 0, y: 0}
-    BookPosition: {x: 0, y: 0}
-    DisplayingCards: []
-  PlayerPositions:
+  PlayerDeckPositions:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}

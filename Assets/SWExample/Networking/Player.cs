@@ -15,7 +15,7 @@ namespace GoFish
         public bool IsAI;
         public Vector2 Position;
         public Vector2 BookPosition;
-        public Card PlayerRole;
+        public Card Card;
 
         public int NumberOfFrags
         {
