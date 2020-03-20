@@ -8,6 +8,7 @@ public class GameGUI : MonoBehaviour
     [SerializeField] private Button ShootButton;
     [SerializeField] private Button MoveButton;
     [SerializeField] private Button AskButton;
+    [SerializeField] private Button CancelButton;
     [SerializeField] private Text Title;
 
     public delegate void OnButtonClick();
@@ -15,6 +16,7 @@ public class GameGUI : MonoBehaviour
     public event OnButtonClick OnShootChosenEvent;
     public event OnButtonClick OnAskChosenEvent;
     public event OnButtonClick OnMoveChosenEvent;
+    public event OnButtonClick OnCancelEvent;
 
     private string TitleText {
         get { return Title.text; }
@@ -53,6 +55,7 @@ public class GameGUI : MonoBehaviour
         ShootButton.gameObject.SetActive(false);
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(false);
 
         TitleText = null;
     }
@@ -63,6 +66,7 @@ public class GameGUI : MonoBehaviour
         ShootButton.gameObject.SetActive(false);
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(false);
 
         TitleText = "Press Start Game";
     }
@@ -73,6 +77,7 @@ public class GameGUI : MonoBehaviour
         ShootButton.gameObject.SetActive(true);
         MoveButton.gameObject.SetActive(true);
         AskButton.gameObject.SetActive(true);
+        CancelButton.gameObject.SetActive(false);
 
         TitleText = playerName + ". Select an action";
     }
@@ -83,19 +88,31 @@ public class GameGUI : MonoBehaviour
         ShootButton.gameObject.SetActive(false);
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(false);
 
         TitleText = playerName + " wins!!";
     }
 
+    public void HandleAskShoot()
+    {
+        StartGameButton.gameObject.SetActive(false);
+        ShootButton.gameObject.SetActive(false);
+        MoveButton.gameObject.SetActive(false);
+        AskButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(true);
+
+        TitleText = null;
+    }
+
     public void HandleShootMode()
     {
-        HandleHide();
+        HandleAskShoot();
         TitleText = "Select a person to kill";
     }
 
     public void HandleAskMode()
     {
-        HandleHide();
+        HandleAskShoot();
         TitleText = "Select a person to ask";
     }
 
@@ -125,4 +142,8 @@ public class GameGUI : MonoBehaviour
         OnMoveChosenEvent();
     }
 
+    public void OnCancelPress()
+    {
+        OnCancelEvent();
+    }
 }

@@ -65,6 +65,7 @@ public class GameLogic : MonoBehaviour
         gui.OnMoveChosenEvent += MoveChosenHandler;
         gui.OnShootChosenEvent += ShootChosenHandler;
         gui.OnAskChosenEvent += AskChosenHandler;
+        gui.OnCancelEvent += CancelHandler;
     }
 
     void OnDisable()
@@ -73,6 +74,7 @@ public class GameLogic : MonoBehaviour
         gui.OnMoveChosenEvent -= MoveChosenHandler;
         gui.OnShootChosenEvent -= ShootChosenHandler;
         gui.OnAskChosenEvent -= AskChosenHandler;
+        gui.OnCancelEvent -= CancelHandler;
     }
 
 
@@ -144,8 +146,11 @@ void OnGameStateChange(EGameState newState)
     {
         OnGameStateChange(EGameState.TURN_MOVE);
     }
-
-
+    void CancelHandler()
+    {
+        OnGameStateChange(EGameState.TURN_IDLE);
+    }
+    
     void InitCardsData()
     {
         deck = new List<Card>(CardsData.Cards);
