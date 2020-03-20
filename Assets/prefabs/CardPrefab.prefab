@@ -91,7 +91,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   image: {fileID: 5859004137584297222}
   text: {fileID: 3946097981320302838}
-  alive: 0
+  alive: 1
+  isMy: 0
 --- !u!114 &4203627216922537311
 MonoBehaviour:
   m_ObjectHideFlags: 0

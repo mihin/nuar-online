@@ -15,7 +15,7 @@ public class GameLogic : MonoBehaviour
     private Card[,] cards = new Card[MAX_WIDTH, MAX_HEIGHT];
     private List<Card> deck = new List<Card>(MAX_WIDTH * MAX_HEIGHT);
     private List<CardPrefab> cardPrefabs = new List<CardPrefab>();
-
+    private int localXPos = -1, localYPos = -1;
 
     [SerializeField] private GridLayoutGroup grid;
     [SerializeField] private GameGUI gui;
@@ -81,14 +81,12 @@ void OnGameStateChange(EGameState newState)
         {
             case EGameState.IDLE:
                 gui.HandleHide();
-                RefreshGraphics();
                 CheckPlayers();
                 Invoke("ShowStartGameGUI", 1);
                 break;
             case EGameState.ERROR:
                 DisplayError();
-                newState = currState;
-                break;
+                return;
             case EGameState.GAME_START:
                 StartGame();
                 break;
@@ -115,6 +113,7 @@ void OnGameStateChange(EGameState newState)
         }
 
         currState = newState;
+        RefreshGraphics();
         Debug.Log("OnGameStateChange " + currState);
     }
 
@@ -152,9 +151,13 @@ void OnGameStateChange(EGameState newState)
                 tempDeck.RemoveAt(index);
             }
         }
+    }
 
-        for (int i = 0; i < width* height; i++)
-            deck.Add(CardsData.Cards[UnityEngine.Random.Range(0, CardsData.Cards.Count)]);
+    Card GetTopDeck()
+    {
+        Card c = deck[0];
+        deck.RemoveAt(0);
+        return c;
     }
 
     bool CheckPlayers()
@@ -199,10 +202,14 @@ void OnGameStateChange(EGameState newState)
             {
                 if (cardPrefabs.Count <= count)
                 {
-                    cardPrefabs.Add(CardsPrefabFactory.Create());
+                    CardPrefab c = CardsPrefabFactory.Create();
+                    c.enabled = false;
+                    cardPrefabs.Add(c);
                 }
                 cardPrefabs[count].Card = cards[i, j];
-                cardPrefabs[count].enabled = false;
+                cardPrefabs[count].isMy = localXPos == i && localYPos == j;
+                cardPrefabs[count].isActive = (currState != EGameState.TURN_ASK && currState != EGameState.TURN_SHOOT) || (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
+                cardPrefabs[count].RefreshGraphics();
                 count++;
             }
         }
@@ -223,15 +230,31 @@ void OnGameStateChange(EGameState newState)
             return;
         }
 
-        HandoutRoles();
         activePlayerId = 0;
+        HandoutRoles();
 
         OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
     }
 
     void HandoutRoles()
     {
+        for (int i = 0; i < Players.Count; i++)
+        {
+            Players[i].PlayerRole = GetTopDeck();
+        }
 
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                if (cards[i, j].name == ActivePlayer.PlayerRole.name)
+                {
+                    localXPos = i;
+                    localYPos = j;
+                    return;
+                }
+            }
+        }
     }
 
     void EnableCards(bool enable = true)

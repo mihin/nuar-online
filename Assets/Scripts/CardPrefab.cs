@@ -16,32 +16,39 @@ public class CardPrefab : MonoBehaviour
         set { card = value; text.text = card.name; }
     }
 
-    public bool alive;
+    public bool alive = true;
     //public bool Alive
     //{
     //    get { return alive; }
     //    set { alive = value; image.color = value?Color.white:Color.red; }
     //}
 
+    public bool isMy = false;
+    public bool isActive = false;
+
     void Start()
     {
-        alive = true;
     }
 
     void Update()
     {
-        image.color = alive ? Color.white : Color.red;
+    }
+
+    public void RefreshGraphics()
+    {
+        image.color = !alive ? Color.red : isMy ? Color.green : Color.white;
+        image.color *= isActive ? 1f : 0.8f;
     }
 
     public void PointerEnter()
     {
-        if (alive)
+        if (alive && isActive)
             transform.localScale += new Vector3(0.2f, 0.2f, 0);
     }
 
     public void PointerExit()
     {
-        if (alive)
+        if (alive && isActive)
             transform.localScale -= new Vector3(0.2f, 0.2f, 0);
     }
 
