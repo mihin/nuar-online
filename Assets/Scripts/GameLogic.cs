@@ -37,6 +37,7 @@ public class GameLogic : MonoBehaviour
         //Debug.Log("GameLogic Awake");
 
         MAX_PLAYERS = Mathf.Min(PlayerPositions.Count, MAX_PLAYERS);
+        Players = new List<Player>(MAX_PLAYERS);
 
         localPlayer = new Player();
         localPlayer.PlayerId = "offline-player";
