@@ -149,11 +149,18 @@ public class GameLogic : MonoBehaviour
 
     void InitCardsData()
     {
+        deck = new List<Card>(CardsData.Cards);
+        deck.Shuffle();
+        if (deck.Count > width * height)
+            deck.RemoveRange(width * height, deck.Count - width * height);
+        List<Card> tempDeck = new List<Card>(deck);
         for (int i = 0; i < width; i++)
         {
             for (int j = 0; j < height; j++)
             {
-                cards[i, j] = CardsData.Cards[UnityEngine.Random.Range(0, CardsData.Cards.Count)];
+                int index = UnityEngine.Random.Range(0, tempDeck.Count);
+                cards[i, j] = tempDeck[index];
+                tempDeck.RemoveAt(index);
             }
         }
 
