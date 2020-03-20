@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
+using GoFish;
 
 public class GameLogic : MonoBehaviour
 {
-    private const int MAX_PLAYERS = 6;
+    private int MAX_PLAYERS = 6;
     private const int MAX_WIDTH = 5;
     private const int MAX_HEIGHT = 5;
     private int width = MAX_WIDTH;
@@ -16,21 +17,47 @@ public class GameLogic : MonoBehaviour
     private Card[,] cards = new Card[MAX_WIDTH, MAX_HEIGHT];
     private List<CardPrefab> cardPrefabs = new List<CardPrefab>();
 
-    [SerializeField] private EGameState currState = EGameState.NONE;
-
-    [SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
     [SerializeField] private GridLayoutGroup grid;
     [SerializeField] private GameGUI gui;
     [Inject] private CardsScriptableObject CardsData;
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
 
+    [SerializeField] private EGameState currState = EGameState.NONE;
+    [SerializeField] protected Player localPlayer;
+    [SerializeField] protected Player remotePlayer;
+    public List<Transform> PlayerPositions = new List<Transform>();
+    //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
-    void Start()
+    protected void Awake()
     {
+        //Debug.Log("GameLogic Awake");
+
+        MAX_PLAYERS = Mathf.Min(PlayerPositions.Count, MAX_PLAYERS);
+
+        localPlayer = new Player();
+        localPlayer.PlayerId = "offline-player";
+        localPlayer.PlayerName = "Player";
+        localPlayer.Position = PlayerPositions[0].position;
+        //localPlayer.BookPosition = BookPositions[0].position;
+
+        remotePlayer = new Player();
+        remotePlayer.PlayerId = "offline-bot";
+        remotePlayer.PlayerName = "Bot";
+        remotePlayer.Position = PlayerPositions[1].position;
+        //remotePlayer.BookPosition = BookPositions[1].position;
+        remotePlayer.IsAI = true;
+
+        //cardAnimator = FindObjectOfType<CardAnimator>();
+
         gui.HandleHide();
         InitCardsData();
         OnGameStateChange(EGameState.IDLE);
+    }
+
+    void Start()
+    {
+
     }
 
     void Update()
@@ -125,7 +152,6 @@ public class GameLogic : MonoBehaviour
     void InitPlayers()
     {
         totalPlayers = 2;
-        playedId = 0;
     }
 
     void RefreshGraphics()
