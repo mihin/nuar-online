@@ -22,42 +22,25 @@ public class GameLogic : MonoBehaviour
     [Inject] private CardsScriptableObject CardsData;
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
 
-
+    private String errorMessage;
+    private bool isOffline = true;
     private int MAX_PLAYERS = 6;
+    private int activePlayerId = -1;
+    private Player ActivePlayer
+    {
+        get { return Players[activePlayerId]; }
+    }
 
     [SerializeField] private EGameState currState = EGameState.NONE;
-    [SerializeField] protected Player localPlayer;
-    [SerializeField] protected Player remotePlayer;
     private List<Player> Players;
     public List<Transform> PlayerPositions = new List<Transform>();
     //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
     protected void Awake()
     {
-        //Debug.Log("GameLogic Awake");
-
         MAX_PLAYERS = Mathf.Min(PlayerPositions.Count, MAX_PLAYERS);
         Players = new List<Player>(MAX_PLAYERS);
 
-        localPlayer = new Player();
-        localPlayer.PlayerId = "offline-player";
-        localPlayer.PlayerName = "Player";
-        localPlayer.Position = PlayerPositions[0].position;
-        //localPlayer.BookPosition = BookPositions[0].position;
-
-        remotePlayer = new Player();
-        remotePlayer.PlayerId = "offline-bot";
-        remotePlayer.PlayerName = "Bot";
-        remotePlayer.Position = PlayerPositions[1].position;
-        //remotePlayer.BookPosition = BookPositions[1].position;
-        remotePlayer.IsAI = true;
-
-        Players.Add(localPlayer);
-        Players.Add(remotePlayer);
-
-        //cardAnimator = FindObjectOfType<CardAnimator>();
-
-        gui.HandleHide();
         InitCardsData();
         OnGameStateChange(EGameState.IDLE);
     }
@@ -89,7 +72,7 @@ public class GameLogic : MonoBehaviour
     }
 
 
-    void OnGameStateChange(EGameState newState)
+void OnGameStateChange(EGameState newState)
     {
         if (newState == currState)
             return;
@@ -97,9 +80,14 @@ public class GameLogic : MonoBehaviour
         switch (newState)
         {
             case EGameState.IDLE:
+                gui.HandleHide();
                 RefreshGraphics();
                 CheckPlayers();
                 Invoke("ShowStartGameGUI", 1);
+                break;
+            case EGameState.ERROR:
+                DisplayError();
+                newState = currState;
                 break;
             case EGameState.GAME_START:
                 StartGame();
@@ -169,9 +157,37 @@ public class GameLogic : MonoBehaviour
             deck.Add(CardsData.Cards[UnityEngine.Random.Range(0, CardsData.Cards.Count)]);
     }
 
-    void CheckPlayers()
+    bool CheckPlayers()
     {
-        // TODO Players.Add()
+        if (Players.Count > 1)
+            return true;
+
+        if (isOffline)
+            InitPlayersOffline();
+
+        // TODO Wait and Add network players
+
+        return Players.Count > 1;
+    }
+
+    void InitPlayersOffline()
+    {
+        Player localPlayer = new Player();
+        localPlayer.PlayerId = "offline-player";
+        localPlayer.PlayerName = "Player";
+        localPlayer.Position = PlayerPositions[0].position;
+        //localPlayer.BookPosition = BookPositions[0].position;
+        Players.Add(localPlayer);
+
+
+        Player remotePlayer = new Player();
+        remotePlayer.PlayerId = "offline-bot";
+        remotePlayer.PlayerName = "Bot";
+        remotePlayer.Position = PlayerPositions[1].position;
+        //remotePlayer.BookPosition = BookPositions[1].position;
+        remotePlayer.IsAI = true;
+
+        Players.Add(remotePlayer);
     }
 
     void RefreshGraphics()
@@ -190,13 +206,25 @@ public class GameLogic : MonoBehaviour
                 count++;
             }
         }
+    }
 
-        // TODO deck.Shuffle();
+    void DisplayError()
+    {
+        // TODO display error
+        Debug.LogError(errorMessage!=null ? errorMessage : "Unknown error");
     }
 
     void StartGame()
     {
+        if (!CheckPlayers())
+        {
+            errorMessage = "Can not start the game, not enough players";
+            OnGameStateChange(EGameState.ERROR);
+            return;
+        }
+
         HandoutRoles();
+        activePlayerId = 0;
 
         OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
     }
