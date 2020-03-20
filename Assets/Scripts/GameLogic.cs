@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -150,7 +149,12 @@ void OnGameStateChange(EGameState newState)
     {
         OnGameStateChange(EGameState.TURN_IDLE);
     }
-    
+    void CardClickHandler(Card card)
+    {
+        // TODO Animate shoot, ask
+        OnGameStateChange(EGameState.TURN_FINISH);
+    }
+
     void InitCardsData()
     {
         deck = new List<Card>(CardsData.Cards);
@@ -221,10 +225,13 @@ void OnGameStateChange(EGameState newState)
                     CardPrefab c = CardsPrefabFactory.Create();
                     c.enabled = false;
                     cardPrefabs.Add(c);
+
+                    c.OnCardClickEvent += CardClickHandler;
                 }
                 cardPrefabs[count].Card = cards[i, j];
                 cardPrefabs[count].isMy = localXPos == i && localYPos == j;
-                cardPrefabs[count].isActive = (currState != EGameState.TURN_ASK && currState != EGameState.TURN_SHOOT) || (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
+                cardPrefabs[count].isActive = (currState == EGameState.TURN_ASK || currState == EGameState.TURN_SHOOT) &&
+                    (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
                 cardPrefabs[count].RefreshGraphics();
                 count++;
             }

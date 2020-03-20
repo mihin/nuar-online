@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
@@ -26,8 +24,14 @@ public class CardPrefab : MonoBehaviour
     public bool isMy = false;
     public bool isActive = false;
 
+    public delegate void OnCardClick(Card card);
+    public event OnCardClick OnCardClickEvent;
+
+    private Vector3 cachedScale = Vector3.one;
+
     void Start()
     {
+        cachedScale = transform.localScale;
     }
 
     void Update()
@@ -40,16 +44,25 @@ public class CardPrefab : MonoBehaviour
         image.color *= isActive ? 1f : 0.8f;
     }
 
+    public void OnClick()
+    {
+        if (isActive)
+            OnCardClickEvent(card);
+
+        Vector3.Lerp(cachedScale * 1.3f, cachedScale, 0.3f);
+    }
+
     public void PointerEnter()
     {
         if (alive && isActive)
-            transform.localScale += new Vector3(0.2f, 0.2f, 0);
+            transform.localScale = cachedScale + new Vector3(0.2f, 0.2f, 0);
     }
 
     public void PointerExit()
     {
-        if (alive && isActive)
-            transform.localScale -= new Vector3(0.2f, 0.2f, 0);
+        //if (alive && isActive)
+        //    transform.localScale -= new Vector3(0.2f, 0.2f, 0);
+        transform.localScale = cachedScale;
     }
 
     public class Factory : PlaceholderFactory<CardPrefab>
