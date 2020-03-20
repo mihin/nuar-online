@@ -8,13 +8,12 @@ using GoFish;
 
 public class GameLogic : MonoBehaviour
 {
-    private int MAX_PLAYERS = 6;
     private const int MAX_WIDTH = 5;
     private const int MAX_HEIGHT = 5;
     private int width = MAX_WIDTH;
     private int height = MAX_HEIGHT;
-    private int totalPlayers;
     private Card[,] cards = new Card[MAX_WIDTH, MAX_HEIGHT];
+    private List<Card> deck = new List<Card>(MAX_WIDTH * MAX_HEIGHT);
     private List<CardPrefab> cardPrefabs = new List<CardPrefab>();
 
 
@@ -23,9 +22,13 @@ public class GameLogic : MonoBehaviour
     [Inject] private CardsScriptableObject CardsData;
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
 
+
+    private int MAX_PLAYERS = 6;
+
     [SerializeField] private EGameState currState = EGameState.NONE;
     [SerializeField] protected Player localPlayer;
     [SerializeField] protected Player remotePlayer;
+    private List<Player> Players;
     public List<Transform> PlayerPositions = new List<Transform>();
     //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
@@ -47,6 +50,9 @@ public class GameLogic : MonoBehaviour
         remotePlayer.Position = PlayerPositions[1].position;
         //remotePlayer.BookPosition = BookPositions[1].position;
         remotePlayer.IsAI = true;
+
+        Players.Add(localPlayer);
+        Players.Add(remotePlayer);
 
         //cardAnimator = FindObjectOfType<CardAnimator>();
 
@@ -91,8 +97,11 @@ public class GameLogic : MonoBehaviour
         {
             case EGameState.IDLE:
                 RefreshGraphics();
-                InitPlayers();
+                CheckPlayers();
                 Invoke("ShowStartGameGUI", 1);
+                break;
+            case EGameState.GAME_START:
+                StartGame();
                 break;
             case EGameState.TURN_IDLE:
                 Invoke("ShowMakeTurnGUI", 1);
@@ -122,7 +131,7 @@ public class GameLogic : MonoBehaviour
 
     void GameStartClickHandler()
     {
-        OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
+        OnGameStateChange(EGameState.GAME_START); // wait curr player to choose action
     }
     void ShootChosenHandler()
     {
@@ -147,11 +156,14 @@ public class GameLogic : MonoBehaviour
                 cards[i, j] = CardsData.Cards[UnityEngine.Random.Range(0, CardsData.Cards.Count)];
             }
         }
+
+        for (int i = 0; i < width* height; i++)
+            deck.Add(CardsData.Cards[UnityEngine.Random.Range(0, CardsData.Cards.Count)]);
     }
 
-    void InitPlayers()
+    void CheckPlayers()
     {
-        totalPlayers = 2;
+        // TODO Players.Add()
     }
 
     void RefreshGraphics()
@@ -170,6 +182,20 @@ public class GameLogic : MonoBehaviour
                 count++;
             }
         }
+
+        // TODO deck.Shuffle();
+    }
+
+    void StartGame()
+    {
+        HandoutRoles();
+
+        OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
+    }
+
+    void HandoutRoles()
+    {
+
     }
 
     void EnableCards(bool enable = true)
