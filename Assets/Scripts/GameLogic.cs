@@ -30,6 +30,10 @@ public class GameLogic : MonoBehaviour
     {
         get { return Players[activePlayerId]; }
     }
+    private int totalPlayers
+    {
+        get { return Players.Count; }
+    }
 
     [SerializeField] private EGameState currState = EGameState.NONE;
     private List<Player> Players;
@@ -105,8 +109,15 @@ void OnGameStateChange(EGameState newState)
                 gui.HandleMoveMode();
                 EnableCards();
                 break;
+            case EGameState.TURN_FINISH:
+                TurnFinish();
+                break;
             case EGameState.GAME_ANIMATION:
                 EnableCards(false);
+                break;
+            case EGameState.GAME_FINISH:
+                EnableCards(false);
+                gui.HandleGameFinish(ActivePlayer.PlayerName);
                 break;
             default:
                 break;
@@ -162,7 +173,7 @@ void OnGameStateChange(EGameState newState)
 
     bool CheckPlayers()
     {
-        if (Players.Count > 1)
+        if (totalPlayers > 1)
             return true;
 
         if (isOffline)
@@ -170,14 +181,14 @@ void OnGameStateChange(EGameState newState)
 
         // TODO Wait and Add network players
 
-        return Players.Count > 1;
+        return totalPlayers > 1;
     }
 
     void InitPlayersOffline()
     {
         Player localPlayer = new Player();
         localPlayer.PlayerId = "offline-player";
-        localPlayer.PlayerName = "Player";
+        localPlayer.PlayerName = "Player1";
         localPlayer.Position = PlayerPositions[0].position;
         //localPlayer.BookPosition = BookPositions[0].position;
         Players.Add(localPlayer);
@@ -185,7 +196,7 @@ void OnGameStateChange(EGameState newState)
 
         Player remotePlayer = new Player();
         remotePlayer.PlayerId = "offline-bot";
-        remotePlayer.PlayerName = "Bot";
+        remotePlayer.PlayerName = "Bot1";
         remotePlayer.Position = PlayerPositions[1].position;
         //remotePlayer.BookPosition = BookPositions[1].position;
         remotePlayer.IsAI = true;
@@ -238,7 +249,7 @@ void OnGameStateChange(EGameState newState)
 
     void HandoutRoles()
     {
-        for (int i = 0; i < Players.Count; i++)
+        for (int i = 0; i < totalPlayers; i++)
         {
             Players[i].PlayerRole = GetTopDeck();
         }
@@ -257,6 +268,18 @@ void OnGameStateChange(EGameState newState)
         }
     }
 
+    void TurnFinish()
+    {
+        if (ActivePlayer.NumberOfFrags > 3)
+        {
+            OnGameStateChange(EGameState.GAME_FINISH);
+            return;
+        }
+
+        activePlayerId = ++activePlayerId % totalPlayers;
+        OnGameStateChange(EGameState.TURN_IDLE);
+    }
+
     void EnableCards(bool enable = true)
     {
         foreach (CardPrefab card in cardPrefabs)
@@ -272,7 +295,7 @@ void OnGameStateChange(EGameState newState)
 
     void ShowMakeTurnGUI()
     {
-        gui.HandleTurnStart();
+        gui.HandleTurnStart(ActivePlayer.PlayerName);
     }
 
 }

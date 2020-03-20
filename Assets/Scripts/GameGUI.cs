@@ -67,14 +67,24 @@ public class GameGUI : MonoBehaviour
         TitleText = "Press Start Game";
     }
 
-    public void HandleTurnStart()
+    public void HandleTurnStart(string playerName)
     {   
         StartGameButton.gameObject.SetActive(false);
         ShootButton.gameObject.SetActive(true);
         MoveButton.gameObject.SetActive(true);
         AskButton.gameObject.SetActive(true);
 
-        TitleText = "Select an action";
+        TitleText = playerName + ". Select an action";
+    }
+
+    public void HandleGameFinish(string playerName)
+    {
+        StartGameButton.gameObject.SetActive(true);
+        ShootButton.gameObject.SetActive(false);
+        MoveButton.gameObject.SetActive(false);
+        AskButton.gameObject.SetActive(false);
+
+        TitleText = playerName + " wins!!";
     }
 
     public void HandleShootMode()

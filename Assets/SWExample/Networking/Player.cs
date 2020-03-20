@@ -17,14 +17,18 @@ namespace GoFish
         public Vector2 BookPosition;
         public Card PlayerRole;
 
-        int numberOfFrags;
+        public int NumberOfFrags
+        {
+            get { return Frags.Count; }
+        }
+
+        private List<Card> Frags = new List<Card>();
         int numberOfBooks;
 
-        public List<Card> Frags = new List<Card>();
 
         public Vector2 NextCardPosition()
         {
-            Vector2 nextPos = Position + Vector2.right * Constants.PLAYER_CARD_POSITION_OFFSET * numberOfFrags;
+            Vector2 nextPos = Position + Vector2.right * Constants.PLAYER_CARD_POSITION_OFFSET * NumberOfFrags;
             return nextPos;
         }
 
@@ -70,7 +74,6 @@ namespace GoFish
         {
             Frags.Add(card);
             //card.OwnerId = PlayerId;
-            numberOfFrags++;
         }
 
         //public void ReceiveBook(Ranks rank, CardAnimator cardAnimator)
