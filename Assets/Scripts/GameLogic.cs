@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
-using GoFish;
+using Pachik;
 
 public class GameLogic : MonoBehaviour
 {
@@ -79,7 +79,7 @@ public class GameLogic : MonoBehaviour
     }
 
 
-void OnGameStateChange(EGameState newState)
+    void OnGameStateChange(EGameState newState)
     {
         if (newState == currState)
             return;
@@ -279,7 +279,7 @@ void OnGameStateChange(EGameState newState)
     void DisplayError()
     {
         // TODO display error
-        Debug.LogError(errorMessage!=null ? errorMessage : "Unknown error");
+        Debug.LogError(errorMessage != null ? errorMessage : "Unknown error");
     }
 
     void StartGame()
@@ -312,7 +312,8 @@ void OnGameStateChange(EGameState newState)
         if (currState == EGameState.TURN_MOVE)
         {
             OnTurnMove(movePosition, moveDirection);
-        } else
+        }
+        else
         {
             //OnShoot(card);
         }
