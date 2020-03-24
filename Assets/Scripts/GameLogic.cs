@@ -114,7 +114,7 @@ void OnGameStateChange(EGameState newState)
                 EnableCards();
                 break;
             case EGameState.TURN_FINISH:
-                TurnFinish();
+                if (TurnFinish()) return;
                 break;
             case EGameState.GAME_ANIMATION:
                 EnableCards(false);
@@ -154,7 +154,8 @@ void OnGameStateChange(EGameState newState)
     }
     void CardClickHandler(Card card)
     {
-        // TODO Animate shoot, ask
+        // TODO get direction of move
+        OnTurn(card, 2, Vector2.right);
         OnGameStateChange(EGameState.TURN_FINISH);
     }
 
@@ -306,19 +307,48 @@ void OnGameStateChange(EGameState newState)
         UpdateField();
     }
 
-    void TurnFinish()
+    void OnTurn(Card card, int movePosition, Vector2 moveDirection)
     {
+        if (currState == EGameState.TURN_MOVE)
+        {
+            OnTurnMove(movePosition, moveDirection);
+        } else
+        {
+            //OnShoot(card);
+        }
+    }
 
+    void OnTurnMove(int position, Vector2 direction)
+    {
+        if (direction == Vector2.left)
+        {
+
+            int i = position;
+            Card card_0 = cards[i, 0];
+            for (int j = 0; j < width - 1; j++)
+            {
+                cards[i, j] = cards[i, (j + (int)direction.x) % width];
+            }
+            cards[i, width - 1] = card_0;
+        }
+        else
+        {
+
+        }
+    }
+
+    bool TurnFinish()
+    {
         if (ActivePlayer.NumberOfFrags > 3)
         {
             OnGameStateChange(EGameState.GAME_FINISH);
-            return;
+            return true;
         }
 
         activePlayerId = ++activePlayerId % totalPlayers;
         UpdateField();
 
-        OnGameStateChange(EGameState.TURN_IDLE);
+        return false;
     }
 
     void EnableCards(bool enable = true)
