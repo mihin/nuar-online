@@ -348,7 +348,8 @@ void OnGameStateChange(EGameState newState)
         activePlayerId = ++activePlayerId % totalPlayers;
         UpdateField();
 
-        return false;
+        OnGameStateChange(EGameState.TURN_IDLE);
+        return true;
     }
 
     void EnableCards(bool enable = true)
