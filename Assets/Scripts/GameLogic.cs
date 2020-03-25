@@ -25,7 +25,7 @@ public class GameLogic : MonoBehaviour
     private bool isOffline = true;
     private int MAX_PLAYERS = 6;
     private int activePlayerId = -1;
-    private Player ActivePlayer
+    protected Player ActivePlayer
     {
         get { return Players[activePlayerId]; }
     }
@@ -34,7 +34,7 @@ public class GameLogic : MonoBehaviour
         get { return Players.Count; }
     }
 
-    [SerializeField] private EGameState currState = EGameState.NONE;
+    [SerializeField] protected EGameState currState = EGameState.NONE;
     private List<Player> Players;
     private List<Vector2> playersGridPos;
     public List<Transform> PlayerDeckPositions = new List<Transform>();
@@ -78,6 +78,10 @@ public class GameLogic : MonoBehaviour
         gui.OnCancelEvent -= CancelHandler;
     }
 
+    protected void GameFlow()
+    {
+        OnGameStateChange(currState);
+    }
 
     void OnGameStateChange(EGameState newState)
     {

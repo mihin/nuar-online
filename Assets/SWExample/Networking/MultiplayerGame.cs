@@ -211,6 +211,7 @@ namespace GoFish
         }
 
         //****************** NetCode Events *********************//
+        #region
         public void OnGameDataReady(EncryptedData encryptedData)
         {
             if(encryptedData == null)
@@ -300,5 +301,6 @@ namespace GoFish
         {
             SceneManager.LoadScene(0);
         }
+        #endregion
     }
 }
