@@ -28,13 +28,13 @@ namespace Pachik
 
         public Vector2 NextCardPosition()
         {
-            Vector2 nextPos = Position + Vector2.right * GoFish.Constants.PLAYER_CARD_POSITION_OFFSET * NumberOfFrags;
+            Vector2 nextPos = Position + Vector2.right * 1 * NumberOfFrags;
             return nextPos;
         }
 
         public Vector2 NextBookPosition()
         {
-            Vector2 nextPos = BookPosition + Vector2.right * GoFish.Constants.PLAYER_BOOK_POSITION_OFFSET * numberOfBooks;
+            Vector2 nextPos = BookPosition + Vector2.right * 1 * numberOfBooks;
             return nextPos;
         }
 
