@@ -8,6 +8,7 @@ using Pachik;
 public class GameLogic : MonoBehaviour
 {
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
+    [Inject] private CardsScriptableObject CardsData;
 
     private List<CardPrefab> prefabs = new List<CardPrefab>();
     private Dictionary<Card, CardPrefab> cardToPrefab = new Dictionary<Card, CardPrefab>();
@@ -68,7 +69,7 @@ public class GameLogic : MonoBehaviour
     {
         List<Player> players = InitPlayersOffline();
 
-        gameDataManager = new GameDataManager(players);
+        gameDataManager = new GameDataManager(players, CardsData.Cards);
 
         OnGameStateChange(EGameState.IDLE);
     }
@@ -188,14 +189,14 @@ public class GameLogic : MonoBehaviour
         int localXPos = (int)playersGridPos[activePlayerId].x;
         int localYPos = (int)playersGridPos[activePlayerId].y;
 
-        Card[,] cards = gameDataManager.Cards;
+        Card[,] cards = gameDataManager.GetGridCards();
         EGameState currState = gameDataManager.GetGameState();
 
         for (int i = 0; i < cards.GetLength(0); i++)
         {
             for (int j = 0; j < cards.GetLength(1); j++)
             {
-                CardPrefab cardPrefabs = cardToPrefab[cards[i, j]];
+                CardPrefab cardPrefabs = cardToPrefab[cards[i,j]];
 
                 cardPrefabs.isActive = (currState == EGameState.TURN_ASK || currState == EGameState.TURN_SHOOT) &&
                     (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
@@ -210,7 +211,7 @@ public class GameLogic : MonoBehaviour
         cardToPrefab.Clear();
 
         int count = 0;
-        Card[,] cards = gameDataManager.Cards;
+        Card[,] cards = gameDataManager.GetGridCards();
         Player ActivePlayer = gameDataManager.GetCurrentTurnPlayer();
 
         for (int i = 0; i < cards.GetLength(0); i++)

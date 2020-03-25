@@ -17,53 +17,88 @@ namespace Pachik
     {
         private const int MAX_WIDTH = 5;
         private const int MAX_HEIGHT = 5;
-        private int width = MAX_WIDTH;
-        private int height = MAX_HEIGHT;
 
         [Inject] private CardsScriptableObject CardsData;
 
         [SerializeField] ProtectedData protectedData;
 
+        public List<Player> Players { get; }
+
         private Stack<Card> PoolOfCards;    // deck
 
-        public Card[,] Cards { get; } = new Card[MAX_WIDTH, MAX_HEIGHT];
-        public List<Player> Players { get; }
+        private Dictionary<byte, Card> CardsDictionary;
+
+        //public Card[,] Cards { get; } = new Card[MAX_WIDTH, MAX_HEIGHT];    // grid
+
+
+        public GameDataManager(List<Player> _players, List<Card> allCards)
+        {
+            Players = _players;
+            byte[] gridCards = InitCardsData(allCards);
+
+            string roomId = "1234567890123456";
+            protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
+        }
 
         public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
         {
             Players = _players;
-            protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId);
+            byte[] gridCards = InitCardsData(CardsData.Cards);
 
-            InitCardsData();
+            protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
         }
 
-        void InitCardsData()
+        byte[] InitCardsData(List<Card> allCards)
         {
-            List<Card> newCards = new List<Card>(CardsData.Cards.Take(width * height));
+            List<Card> newCards = new List<Card>(allCards.Take(MAX_WIDTH * MAX_HEIGHT));
             newCards.Shuffle();
+            // forming Deck
             PoolOfCards = new Stack<Card>(newCards);
+            // forming static Id to Card dictionary
+            if (CardsDictionary == null)
+                CardsDictionary = newCards.ToDictionary(card => card.id);
 
             List<Card> tempDeck = newCards; // new List<Card>(PoolOfCards);
-            for (int i = 0; i < width; i++)
+            //for (int i = 0; i < width; i++)
+            //{
+            //    for (int j = 0; j < height; j++)
+            //    {
+            //        int index = UnityEngine.Random.Range(0, tempDeck.Count);
+            //        Cards[i, j] = tempDeck[index];
+            //        tempDeck.RemoveAt(index);
+            //    }
+            //}
+
+            byte[] result = new byte[MAX_WIDTH * MAX_HEIGHT];
+            for (int i = 0; i < MAX_WIDTH * MAX_HEIGHT; i++)
             {
-                for (int j = 0; j < height; j++)
-                {
-                    int index = UnityEngine.Random.Range(0, tempDeck.Count);
-                    Cards[i, j] = tempDeck[index];
-                    tempDeck.RemoveAt(index);
-                }
+                int index = UnityEngine.Random.Range(0, tempDeck.Count);
+                result[i] = tempDeck[index].id;
+                tempDeck.RemoveAt(index);
             }
+            return result;
         }
 
-        //public void Shuffle()
-        //{
-        //    byte[] cardValues = new byte[25];
-        //    PoolOfCards = new Stack<Card>(25);
+        public void Shuffle(byte width)
+        {
+            byte[] gridCards = InitCardsData(CardsData.Cards);
+            protectedData.SetGridCards(gridCards, width);
+        }
 
-        //    // TODO add shuffle logic
+        public Card[,] GetGridCards()
+        {
+            byte[,] grid = protectedData.GetGridCards();
+            Card[,] result = new Card[grid.GetLength(0), grid.GetLength(1)];
 
-        //    protectedData.SetGridCards(cardValues);
-        //}
+            for (int i = 0; i<grid.GetLength(0); i++)
+            {
+                for (int j = 0; j < grid.GetLength(1); j++)
+                {
+                    result[i,j] = CardsDictionary[grid[i, j]];
+                }
+            }
+            return result;
+        }
 
         public void DealRoleToPlayer(Player player)
         {

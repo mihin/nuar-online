@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using SWNetwork;
+using UnityEngine;
 
 namespace Pachik
 {
@@ -21,38 +22,57 @@ namespace Pachik
     {
         const char DELIMETER = '|';
 
-        byte[] gridCards = new byte[25];
-        List<string> playerIds = new List<string>();
-        List<byte> playersRoleCard = new List<byte>();
-        List<byte> playersFragCount = new List<byte>();
+        byte[] gridCards;
+        byte gridWidth;
+        List<string> playerIds;
+        List<byte> playersRoleCard;
+        List<byte> playersFragCount;
         string currentTurnPlayerId;
         byte currentGameState;
-
 
         byte[] encryptionKey;
         byte[] safeData;
 
-        public ProtectedData(List<string> players, string roomId)
+        public ProtectedData(List<string> players, string roomId, IEnumerable<byte> _cards, byte width)
         {
             playerIds = players;
             currentTurnPlayerId = "";
+            currentGameState = 0;
             CalculateKey(roomId);
+            gridCards = _cards.ToArray();
+            gridWidth = width;
+
+            playersFragCount = new List<byte>(playerIds.Count);
+            playersRoleCard = new List<byte>(playerIds.Count);
+            for (int i=0; i<playerIds.Count; i++)
+            {
+                playersFragCount.Add(0);
+                playersRoleCard.Add(0);
+            }
             Encrypt();
         }
 
-        public void SetGridCards(byte[] cardValues)
+        public void SetGridCards(byte[] cardValues, byte width)
         {
 
             Decrypt();
             gridCards = cardValues;
+            gridWidth = width;
             Encrypt();
         }
 
-        public byte[] GetGridCards()
+        public byte[,] GetGridCards()
         {
-            byte[] result;
             Decrypt();
-            result = gridCards;
+            //result = gridCards;
+            byte[,] result = new byte[gridWidth, gridCards.Length / gridWidth];
+            for (int i = 0; i < gridWidth; i++)
+            {
+                for (int j = 0; j < gridCards.Length; j++)
+                {
+                    result[i, j] = gridCards[i * j + j];
+                }
+            }
             Encrypt();
             return result;
         }
@@ -78,6 +98,8 @@ namespace Pachik
         public void SetPlayerRole(string playerId, byte role)
         {
             Decrypt();
+            string sss = string.Join(";", playerIds);
+            Debug.Log("SetPlayerRole" + sss + ", id = " + playerId);
             int index = playerIds.FindIndex(id => id == playerId);
             playersRoleCard[index] = role;
             Encrypt();
@@ -162,6 +184,7 @@ namespace Pachik
         {
             SWNetworkMessage message = new SWNetworkMessage();
             message.Push((Byte)gridCards.Length);
+            message.Push(gridWidth);
             message.PushByteArray(gridCards);
 
             message.PushUTF8LongString(String.Concat(playerIds, DELIMETER));
@@ -183,6 +206,7 @@ namespace Pachik
             playersRoleCard = new List<byte>();
             currentTurnPlayerId = null;
             currentGameState = 0;
+            gridWidth = 0;
 
         }
 
@@ -192,6 +216,7 @@ namespace Pachik
 
             SWNetworkMessage message = new SWNetworkMessage(byteArray);
             byte cardsCount = message.PopByte();
+            gridWidth = message.PopByte();
             gridCards = message.PopByteArray(cardsCount);
 
             playerIds = message.PopUTF8LongString().Split(DELIMETER).ToList();
