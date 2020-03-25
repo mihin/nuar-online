@@ -9,6 +9,7 @@ public enum EGameState
     TURN_MOVE,
     TURN_SHOOT,
     TURN_ASK,
+    TURN_OPPORNENT_CONFIRMED,
     TURN_FINISH,
     GAME_ANIMATION,
     GAME_PAUSE,
