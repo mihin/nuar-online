@@ -10,13 +10,6 @@ public class MultiplayerGameLogic : GameLogic
     GameDataManager gameDataManager;
 
     Player currentTurnPlayer;
-    protected new Player ActivePlayer
-    {
-        get
-        {
-            return currentTurnPlayer;
-        }
-    }
 
 
     //****************** NetCode Events *********************//
@@ -27,8 +20,9 @@ public class MultiplayerGameLogic : GameLogic
             Debug.Log("New game");
             if (NetworkClient.Instance.IsHost)
             {
-                currState = EGameState.GAME_START;
-                gameDataManager.SetGameState(currState);
+                //currState = EGameState.GAME_START;
+                //gameDataManager.SetGameState(EGameState.GAME_START);
+                OnGameStateChange(EGameState.GAME_START);
 
                 netCode.ModifyGameData(gameDataManager.EncryptedData());
 
@@ -38,7 +32,7 @@ public class MultiplayerGameLogic : GameLogic
         else
         {
             gameDataManager.ApplyEncrptedData(encryptedData);
-            currState = gameDataManager.GetGameState();
+            EGameState currState = gameDataManager.GetGameState();
             currentTurnPlayer = gameDataManager.GetCurrentTurnPlayer();
             //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
 
@@ -51,7 +45,10 @@ public class MultiplayerGameLogic : GameLogic
                 //cardAnimator.DealDisplayingCards(remotePlayer, gameDataManager.PlayerCards(remotePlayer).Count, false);
 
 
-                base.GameFlow();
+                //base.GameFlow();.
+                //gameDataManager.SetGameState(EGameState.GAME_START);
+                OnGameStateChange(EGameState.GAME_START);
+
             }
         }
     }
@@ -59,21 +56,23 @@ public class MultiplayerGameLogic : GameLogic
     public void OnGameDataChanged(EncryptedData encryptedData)
     {
         gameDataManager.ApplyEncrptedData(encryptedData);
-        currState = gameDataManager.GetGameState();
+        EGameState currState = gameDataManager.GetGameState();
         currentTurnPlayer = gameDataManager.GetCurrentTurnPlayer();
         //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
+
+        OnGameStateChange(currState);
     }
 
-    public void OnGameStateChanged()
-    {
-        base.GameFlow();
-    }
+    //public void OnGameStateChanged()
+    //{
+    //    base.GameFlow();
+    //}
 
     public void OnOppoentConfirmed()
     {
-        currState = EGameState.TURN_OPPORNENT_CONFIRMED;
-
-        gameDataManager.SetGameState(currState);
+        //currState = EGameState.TURN_OPPORNENT_CONFIRMED;
+        //gameDataManager.SetGameState(currState);
+        OnGameStateChange(EGameState.TURN_OPPORNENT_CONFIRMED);
 
         netCode.ModifyGameData(gameDataManager.EncryptedData());
         netCode.NotifyOtherPlayersGameStateChanged();

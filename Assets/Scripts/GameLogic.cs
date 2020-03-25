@@ -7,35 +7,22 @@ using Pachik;
 
 public class GameLogic : MonoBehaviour
 {
-    private const int MAX_WIDTH = 5;
-    private const int MAX_HEIGHT = 5;
-    private int width = MAX_WIDTH;
-    private int height = MAX_HEIGHT;
-    private Card[,] cards = new Card[MAX_WIDTH, MAX_HEIGHT];
-    private List<Card> deck = new List<Card>(MAX_WIDTH * MAX_HEIGHT);
+    [Inject] private CardPrefab.Factory CardsPrefabFactory;
+
     private List<CardPrefab> prefabs = new List<CardPrefab>();
     private Dictionary<Card, CardPrefab> cardToPrefab = new Dictionary<Card, CardPrefab>();
 
     [SerializeField] private GridLayoutGroup grid;
     [SerializeField] private GameGUI gui;
-    [Inject] private CardsScriptableObject CardsData;
-    [Inject] private CardPrefab.Factory CardsPrefabFactory;
+    protected GameDataManager gameDataManager;
+
 
     private String errorMessage;
     private bool isOffline = true;
     private int MAX_PLAYERS = 6;
-    private int activePlayerId = -1;
-    protected Player ActivePlayer
-    {
-        get { return Players[activePlayerId]; }
-    }
-    private int totalPlayers
-    {
-        get { return Players.Count; }
-    }
 
-    [SerializeField] protected EGameState currState = EGameState.NONE;
-    private List<Player> Players;
+
+    //[SerializeField] protected EGameState currState = EGameState.NONE;
     private List<Vector2> playersGridPos;
     public List<Transform> PlayerDeckPositions = new List<Transform>();
     //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
@@ -43,11 +30,9 @@ public class GameLogic : MonoBehaviour
     protected void Awake()
     {
         MAX_PLAYERS = Mathf.Min(PlayerDeckPositions.Count, MAX_PLAYERS);
-        Players = new List<Player>(MAX_PLAYERS);
         playersGridPos = new List<Vector2>(MAX_PLAYERS);
 
-        InitCardsData();
-        OnGameStateChange(EGameState.IDLE);
+        InitGameData();
     }
 
     void Start()
@@ -78,23 +63,32 @@ public class GameLogic : MonoBehaviour
         gui.OnCancelEvent -= CancelHandler;
     }
 
-    protected void GameFlow()
+    // TODO override for multiplayer
+    protected void InitGameData()
     {
-        OnGameStateChange(currState);
+        List<Player> players = InitPlayersOffline();
+
+        gameDataManager = new GameDataManager(players);
+
+        OnGameStateChange(EGameState.IDLE);
     }
 
-    void OnGameStateChange(EGameState newState)
+    //protected void GameFlow()
+    //{
+    //    OnGameStateChange(currState);
+    //}
+
+    protected void OnGameStateChange(EGameState newState)
     {
-        if (newState == currState)
+        if (newState == gameDataManager.GetGameState())
             return;
 
         switch (newState)
         {
             case EGameState.IDLE:
                 gui.HandleHide();
-                CheckPlayers();
                 Invoke("ShowStartGameGUI", 1);
-                currState = newState;
+                gameDataManager.SetGameState(newState);
                 return;
             case EGameState.ERROR:
                 DisplayError();
@@ -125,15 +119,16 @@ public class GameLogic : MonoBehaviour
                 break;
             case EGameState.GAME_FINISH:
                 EnableCards(false);
-                gui.HandleGameFinish(ActivePlayer.PlayerName);
+                gui.HandleGameFinish(gameDataManager.Winner().PlayerName);
                 break;
             default:
                 break;
         }
 
-        currState = newState;
+        Debug.Log("OnGameStateChange " + newState);
+
+        gameDataManager.SetGameState(newState);
         RefreshGraphics();
-        Debug.Log("OnGameStateChange " + currState);
     }
 
     void GameStartClickHandler()
@@ -163,46 +158,10 @@ public class GameLogic : MonoBehaviour
         OnGameStateChange(EGameState.TURN_FINISH);
     }
 
-    void InitCardsData()
+    private List<Player> InitPlayersOffline()
     {
-        deck = new List<Card>(CardsData.Cards);
-        deck.Shuffle();
-        if (deck.Count > width * height)
-            deck.RemoveRange(width * height, deck.Count - width * height);
-        List<Card> tempDeck = new List<Card>(deck);
-        for (int i = 0; i < width; i++)
-        {
-            for (int j = 0; j < height; j++)
-            {
-                int index = UnityEngine.Random.Range(0, tempDeck.Count);
-                cards[i, j] = tempDeck[index];
-                tempDeck.RemoveAt(index);
-            }
-        }
-    }
+        List<Player> Players = new List<Player>(MAX_PLAYERS);
 
-    Card GetTopDeck()
-    {
-        Card c = deck[0];
-        deck.RemoveAt(0);
-        return c;
-    }
-
-    bool CheckPlayers()
-    {
-        if (totalPlayers > 1)
-            return true;
-
-        if (isOffline)
-            InitPlayersOffline();
-
-        // TODO Wait and Add network players
-
-        return totalPlayers > 1;
-    }
-
-    void InitPlayersOffline()
-    {
         Player localPlayer = new Player();
         localPlayer.PlayerId = "offline-player";
         localPlayer.PlayerName = "Player1";
@@ -219,17 +178,22 @@ public class GameLogic : MonoBehaviour
         remotePlayer.IsAI = true;
 
         Players.Add(remotePlayer);
+
+        return Players;
     }
 
     void RefreshGraphics()
     {
+        int activePlayerId = gameDataManager.GetCurrentTurnPlayer().PlayerId.GetHashCode();
         int localXPos = (int)playersGridPos[activePlayerId].x;
         int localYPos = (int)playersGridPos[activePlayerId].y;
 
+        Card[,] cards = gameDataManager.Cards;
+        EGameState currState = gameDataManager.GetGameState();
 
-        for (int i = 0; i < width; i++)
+        for (int i = 0; i < cards.GetLength(0); i++)
         {
-            for (int j = 0; j < height; j++)
+            for (int j = 0; j < cards.GetLength(1); j++)
             {
                 CardPrefab cardPrefabs = cardToPrefab[cards[i, j]];
 
@@ -246,10 +210,13 @@ public class GameLogic : MonoBehaviour
         cardToPrefab.Clear();
 
         int count = 0;
-        for (int i = 0; i < width; i++)
+        Card[,] cards = gameDataManager.Cards;
+        Player ActivePlayer = gameDataManager.GetCurrentTurnPlayer();
+
+        for (int i = 0; i < cards.GetLength(0); i++)
         {
-            for (int j = 0; j < height; j++)
-            {
+            for (int j = 0; j < cards.GetLength(1); j++)
+            { 
                 if (prefabs.Count <= count)
                 {
                     CardPrefab c = CardsPrefabFactory.Create();
@@ -266,7 +233,7 @@ public class GameLogic : MonoBehaviour
                 {
                     prefabs[count].isMy = true;
                     //playersGridPos[activePlayerId] = new Vector2(i, j);
-                    playersGridPos.Insert(activePlayerId, new Vector2(i, j));
+                    playersGridPos.Insert(ActivePlayer.PlayerId.GetHashCode(), new Vector2(i, j));
                     //playersGridPos.Add(new Vector2(i, j));
                 }
                 else
@@ -288,14 +255,14 @@ public class GameLogic : MonoBehaviour
 
     void StartGame()
     {
-        if (!CheckPlayers())
-        {
-            errorMessage = "Can not start the game, not enough players";
-            OnGameStateChange(EGameState.ERROR);
-            return;
-        }
+        //if (!CheckPlayers())
+        //{
+        //    errorMessage = "Can not start the game, not enough players";
+        //    OnGameStateChange(EGameState.ERROR);
+        //    return;
+        //}
 
-        activePlayerId = 0;
+        //activePlayerId = 0;
         HandoutRoles();
 
         OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
@@ -303,9 +270,9 @@ public class GameLogic : MonoBehaviour
 
     void HandoutRoles()
     {
-        for (int i = 0; i < totalPlayers; i++)
+        foreach (Player player in gameDataManager.Players)
         {
-            Players[i].Card = GetTopDeck();
+            gameDataManager.DealRoleToPlayer(player);
         }
 
         UpdateField();
@@ -313,7 +280,7 @@ public class GameLogic : MonoBehaviour
 
     void OnTurn(Card card, int movePosition, Vector2 moveDirection)
     {
-        if (currState == EGameState.TURN_MOVE)
+        if (gameDataManager.GetGameState() == EGameState.TURN_MOVE)
         {
             OnTurnMove(movePosition, moveDirection);
         }
@@ -328,13 +295,13 @@ public class GameLogic : MonoBehaviour
         if (direction == Vector2.left)
         {
 
-            int i = position;
-            Card card_0 = cards[i, 0];
-            for (int j = 0; j < width - 1; j++)
-            {
-                cards[i, j] = cards[i, (j + (int)direction.x) % width];
-            }
-            cards[i, width - 1] = card_0;
+            //int i = position;
+            //Card card_0 = cards[i, 0];
+            //for (int j = 0; j < width - 1; j++)
+            //{
+            //    cards[i, j] = cards[i, (j + (int)direction.x) % width];
+            //}
+            //cards[i, width - 1] = card_0;
         }
         else
         {
@@ -344,13 +311,14 @@ public class GameLogic : MonoBehaviour
 
     bool TurnFinish()
     {
-        if (ActivePlayer.NumberOfFrags > 3)
+        if (gameDataManager.IsGameFinished())
         {
             OnGameStateChange(EGameState.GAME_FINISH);
             return true;
         }
 
-        activePlayerId = ++activePlayerId % totalPlayers;
+        gameDataManager.NextTurnPlayer();
+
         UpdateField();
 
         OnGameStateChange(EGameState.TURN_IDLE);
@@ -372,7 +340,7 @@ public class GameLogic : MonoBehaviour
 
     void ShowMakeTurnGUI()
     {
-        gui.HandleTurnStart(ActivePlayer.PlayerName);
+        gui.HandleTurnStart(gameDataManager.GetCurrentTurnPlayer().PlayerName);
     }
 
 }

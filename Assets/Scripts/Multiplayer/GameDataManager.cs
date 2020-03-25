@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Zenject;
 
 namespace Pachik
 {
@@ -14,28 +15,55 @@ namespace Pachik
     [Serializable]
     public class GameDataManager
     {
-        List<Player> players;
+        private const int MAX_WIDTH = 5;
+        private const int MAX_HEIGHT = 5;
+        private int width = MAX_WIDTH;
+        private int height = MAX_HEIGHT;
 
-        Stack<Card> PoolOfCards;
+        [Inject] private CardsScriptableObject CardsData;
 
-        [SerializeField]
-        ProtectedData protectedData;
+        [SerializeField] ProtectedData protectedData;
+
+        private Stack<Card> PoolOfCards;    // deck
+
+        public Card[,] Cards { get; } = new Card[MAX_WIDTH, MAX_HEIGHT];
+        public List<Player> Players { get; }
 
         public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
         {
-            players = _players;
+            Players = _players;
             protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId);
+
+            InitCardsData();
         }
 
-        public void Shuffle()
+        void InitCardsData()
         {
-            byte[] cardValues = new byte[25];
-            PoolOfCards = new Stack<Card>(25);
+            List<Card> newCards = new List<Card>(CardsData.Cards.Take(width * height));
+            newCards.Shuffle();
+            PoolOfCards = new Stack<Card>(newCards);
 
-            // TODO add shuffle logic
-
-            protectedData.SetGridCards(cardValues);
+            List<Card> tempDeck = newCards; // new List<Card>(PoolOfCards);
+            for (int i = 0; i < width; i++)
+            {
+                for (int j = 0; j < height; j++)
+                {
+                    int index = UnityEngine.Random.Range(0, tempDeck.Count);
+                    Cards[i, j] = tempDeck[index];
+                    tempDeck.RemoveAt(index);
+                }
+            }
         }
+
+        //public void Shuffle()
+        //{
+        //    byte[] cardValues = new byte[25];
+        //    PoolOfCards = new Stack<Card>(25);
+
+        //    // TODO add shuffle logic
+
+        //    protectedData.SetGridCards(cardValues);
+        //}
 
         public void DealRoleToPlayer(Player player)
         {
@@ -62,22 +90,29 @@ namespace Pachik
 
         public Player Winner()
         {
-            return players.Find(p => p.PlayerId == protectedData.WinnerPlayerId());
+            return Players.Find(p => p.PlayerId == protectedData.WinnerPlayerId());
         }
 
-        public bool GameFinished()
+        public bool IsGameFinished()
         {
             return protectedData.GameFinished();
         }
 
-        public void SetCurrentTurnPlayer(Player player)
+        public void NextTurnPlayer()
         {
-            protectedData.SetCurrentTurnPlayerId(player.PlayerId);
+            string id = protectedData.GetCurrentTurnPlayerId();
+            for (int i = 0; i < Players.Count; i++)
+            {
+                if (Players[i].PlayerId == id)
+                {
+                    protectedData.SetCurrentTurnPlayerId(Players[(i + 1) % Players.Count].PlayerId);
+                }
+            }
         }
 
         public Player GetCurrentTurnPlayer()
         {
-            return players.Find(p => p.PlayerId == protectedData.GetCurrentTurnPlayerId());
+            return Players.Find(p => p.PlayerId == protectedData.GetCurrentTurnPlayerId());
         }
 
         public void SetGameState(EGameState gameState)
