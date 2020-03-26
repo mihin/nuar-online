@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using SWNetwork;
 using Pachik;
 using UnityEngine.SceneManagement;
@@ -11,7 +13,36 @@ public class MultiplayerGameLogic : GameLogic
 
     Player currentTurnPlayer;
 
+    
+    protected new void InitGameData()
+    {
+        netCode = FindObjectOfType<NetCode>();
+        
+        NetworkClient.Lobby.GetPlayersInRoom((successful, reply, error) =>
+        {
+            if (successful)
+            {
+                List<Player> players = reply.players.Select(swPlayer => Player.fromNetworkPlayer(swPlayer)).ToList();
 
+                for (int i = 0; i < players.Count; i++)
+                {
+                    players[i].Position = PlayerDeckPositions[i].position;
+                }
+
+                gameDataManager = new GameDataManager(players, CardsData.Cards, NetworkClient.Lobby.RoomId);
+                netCode.EnableRoomPropertyAgent();
+                
+                OnGameStateChange(EGameState.IDLE);
+            }
+            else
+            {
+                Debug.LogError("Failed to get players in room.");
+            }
+
+        });
+    }
+    
+    
     //****************** NetCode Events *********************//
     public void OnGameDataReady(EncryptedData encryptedData)
     {
@@ -63,10 +94,10 @@ public class MultiplayerGameLogic : GameLogic
         OnGameStateChange(currState);
     }
 
-    //public void OnGameStateChanged()
-    //{
-    //    base.GameFlow();
-    //}
+    public void OnGameStateChanged()
+    {
+        base.GameFlow();
+    }
 
     public void OnOppoentConfirmed()
     {

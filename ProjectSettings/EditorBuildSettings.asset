@@ -6,15 +6,18 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/SWExample/Scenes/GameScene.unity
-    guid: ef4e26f63cf08443bbb798386da6171c
-  - enabled: 1
     path: Assets/SWExample/Scenes/LobbyScene.unity
     guid: cf2586549363c4aceb3803620a7e19aa
   - enabled: 1
-    path: Assets/SWExample/Scenes/MultiplayerGameScene.unity
-    guid: 84ce80dc44db94e489fde8c434aeaac7
+    path: Assets/scenes/NuarMultiplayer.unity
+    guid: 01324712a81014acb9ab6b4977ef770d
   - enabled: 1
     path: Assets/scenes/testScene.unity
     guid: f11fcae471132467cb6889f3ae68e6c5
+  - enabled: 0
+    path: Assets/SWExample/Scenes/GameScene.unity
+    guid: ef4e26f63cf08443bbb798386da6171c
+  - enabled: 0
+    path: Assets/SWExample/Scenes/MultiplayerGameScene.unity
+    guid: 84ce80dc44db94e489fde8c434aeaac7
   m_configObjects: {}

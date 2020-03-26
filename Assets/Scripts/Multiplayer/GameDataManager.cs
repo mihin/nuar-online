@@ -33,24 +33,23 @@ namespace Pachik
         //public Card[,] Cards { get; } = new Card[MAX_WIDTH, MAX_HEIGHT];    // grid
 
 
-        public GameDataManager(List<Player> _players, List<Card> allCards)
+        public GameDataManager(List<Player> _players, List<Card> allCards, string roomId = "1234567890123456")
         {
             Players = _players;
             DeadIds = new List<byte>();
             byte[] gridCards = InitCardsData(allCards);
 
-            string roomId = "1234567890123456";
             protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
         }
 
-        public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
-        {
-            Players = _players;
-            DeadIds = new List<byte>();
-            byte[] gridCards = InitCardsData(CardsData.Cards);
-
-            protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
-        }
+        // public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
+        // {
+        //     Players = _players;
+        //     DeadIds = new List<byte>();
+        //     byte[] gridCards = InitCardsData(CardsData.Cards);
+        //
+        //     protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
+        // }
 
         byte[] InitCardsData(List<Card> allCards)
         {

@@ -200,7 +200,7 @@ namespace GoFish
             {
                 if (connected)
                 {
-                    SceneManager.LoadScene("MultiplayerGameScene");
+                    SceneManager.LoadScene("NuarMultiplayer");
                 }
                 else
                 {
@@ -235,7 +235,7 @@ namespace GoFish
         public void OnPracticeClicked()
         {
             Debug.Log("OnPracticeClicked");
-            SceneManager.LoadScene("GameScene");
+            SceneManager.LoadScene("testScene");
         }
 
         /// <summary>

@@ -9,7 +9,7 @@ public class GameLogic : MonoBehaviour
 {
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
     [Inject] private MoveButton.Factory MoveButtonPrefabFactory;
-    [Inject] private CardsScriptableObject CardsData;
+    [Inject] protected CardsScriptableObject CardsData;
 
     private List<CardPrefab> prefabs = new List<CardPrefab>();
     private List<MoveButton> moveButtons = new List<MoveButton>();
@@ -75,10 +75,10 @@ public class GameLogic : MonoBehaviour
         OnGameStateChange(EGameState.IDLE);
     }
 
-    //protected void GameFlow()
-    //{
-    //    OnGameStateChange(currState);
-    //}
+    protected void GameFlow()
+    {
+        OnGameStateChange(gameDataManager.GetGameState());
+    }
 
     protected void OnGameStateChange(EGameState newState)
     {

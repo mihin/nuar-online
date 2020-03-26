@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using SWNetwork;
 using UnityEngine;
 
 namespace Pachik
@@ -10,6 +11,16 @@ namespace Pachik
     [Serializable]
     public class Player : IEquatable<Player>
     {
+
+        public static Player fromNetworkPlayer(SWPlayer nwPlayer)
+        {
+            Player p = new Player();
+            p.PlayerId = nwPlayer.id;
+            p.PlayerName = nwPlayer.GetCustomDataString();
+            
+            return p;
+        }
+        
         public string PlayerId;
         public string PlayerName;
         public bool IsAI;
