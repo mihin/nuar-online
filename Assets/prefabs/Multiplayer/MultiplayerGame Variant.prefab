@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   grid: {fileID: 0}
+  moveUp: {fileID: 0}
+  moveDown: {fileID: 0}
+  moveLeft: {fileID: 0}
+  moveRight: {fileID: 0}
   gui: {fileID: 0}
-  currState: 0
   PlayerDeckPositions:
   - {fileID: 0}
   - {fileID: 0}
