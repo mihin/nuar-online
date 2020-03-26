@@ -4,7 +4,6 @@ using System.Linq;
 using ModestTree;
 using ModestTree.Util;
 #if !NOT_UNITY3D
-using UnityEditor.Animations;
 using UnityEngine.SceneManagement;
 using UnityEngine;
 #endif

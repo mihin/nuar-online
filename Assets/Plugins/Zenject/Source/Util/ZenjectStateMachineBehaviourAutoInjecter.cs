@@ -1,5 +1,4 @@
 using ModestTree;
-using UnityEditor.Animations;
 using UnityEngine;
 
 namespace Zenject
@@ -7,13 +6,13 @@ namespace Zenject
     public class ZenjectStateMachineBehaviourAutoInjecter : MonoBehaviour
     {
         DiContainer _container;
-        AnimatorController _animator;
+        object _animator;
 
         [Inject]
         public void Construct(DiContainer container)
         {
             _container = container;
-            _animator = GetComponent<AnimatorController>();
+            _animator = GetComponent<object>();
             Assert.IsNotNull(_animator);
         }
 

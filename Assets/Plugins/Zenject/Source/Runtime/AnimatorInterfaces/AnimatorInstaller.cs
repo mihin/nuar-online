@@ -1,13 +1,12 @@
-using UnityEditor.Animations;
 using UnityEngine;
 
 namespace Zenject
 {
-    public class AnimatorInstaller : Installer<AnimatorController, AnimatorInstaller>
+    public class AnimatorInstaller : Installer<object, AnimatorInstaller>
     {
-        readonly AnimatorController _animator;
+        readonly object _animator;
 
-        public AnimatorInstaller(AnimatorController animator)
+        public AnimatorInstaller(object animator)
         {
             _animator = animator;
         }
