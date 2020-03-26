@@ -20,11 +20,9 @@ public class GameLogic : MonoBehaviour
     [SerializeField] private GameGUI gui;
     protected GameDataManager gameDataManager;
 
-
     private String errorMessage;
     private bool isOffline = true;
     private int MAX_PLAYERS = 6;
-
 
     //[SerializeField] protected EGameState currState = EGameState.NONE;
     private Dictionary<int, Vector2> playersGridPos = new Dictionary<int, Vector2>();
@@ -158,13 +156,12 @@ public class GameLogic : MonoBehaviour
     }
     void CardClickHandler(Card card)
     {
-        // TODO get direction of move
-        OnTurn(2, MoveButton.Direction.Right);
+        OnTurnShoot(card);
         OnGameStateChange(EGameState.TURN_FINISH);
     }
     void MoveButtonClickHandler(int index, MoveButton.Direction direction)
     {
-        OnTurn(index, direction);
+        OnTurnMove(index, direction);
         OnGameStateChange(EGameState.TURN_FINISH);
     }
 
@@ -209,6 +206,8 @@ public class GameLogic : MonoBehaviour
 
                 cardPrefabs.isActive = (currState == EGameState.TURN_ASK || currState == EGameState.TURN_SHOOT) &&
                     (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
+
+                cardPrefabs.alive = !gameDataManager.DeadIds.Contains(cardPrefabs.Card.id);
 
                 cardPrefabs.RefreshGraphics();
             }
@@ -322,15 +321,18 @@ public class GameLogic : MonoBehaviour
         UpdateField();
     }
 
-    void OnTurn(int index, MoveButton.Direction direction)
+    void OnTurnShoot(Card card)
     {
-        if (gameDataManager.GetGameState() == EGameState.TURN_MOVE)
+        foreach (Player player in gameDataManager.Players)
         {
-            OnTurnMove(index, direction);
-        }
-        else
-        {
-            //OnShoot(card);
+            if (player.Card.id == card.id)
+            {
+                prefabs.Find(c => c.Card.id == card.id).Kill();
+                gameDataManager.AddDeadId(card.id);
+                gameDataManager.AddPlayerFrag(gameDataManager.GetCurrentTurnPlayer());
+                gameDataManager.DealRoleToPlayer(player);
+                return;
+            }
         }
     }
 

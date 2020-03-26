@@ -41,15 +41,21 @@ public class CardPrefab : MonoBehaviour
     public void RefreshGraphics()
     {
         image.color = !alive ? Color.red : isMy ? Color.green : Color.white;
-        image.color *= isActive ? 1f : 0.8f;
+        image.color *= alive && isActive ? 1f : 0.8f;
     }
 
     public void OnClick()
     {
-        if (isActive)
+        if (alive && isActive)
             OnCardClickEvent(card);
 
         Vector3.Lerp(cachedScale * 1.3f, cachedScale, 0.3f);
+    }
+
+    public void Kill()
+    {
+        alive = false;
+        RefreshGraphics();
     }
 
     public void PointerEnter()

@@ -26,6 +26,8 @@ namespace Pachik
 
         private Stack<Card> PoolOfCards;    // deck
 
+        public List<byte> DeadIds { get; }
+
         private Dictionary<byte, Card> CardsDictionary;
 
         //public Card[,] Cards { get; } = new Card[MAX_WIDTH, MAX_HEIGHT];    // grid
@@ -34,6 +36,7 @@ namespace Pachik
         public GameDataManager(List<Player> _players, List<Card> allCards)
         {
             Players = _players;
+            DeadIds = new List<byte>();
             byte[] gridCards = InitCardsData(allCards);
 
             string roomId = "1234567890123456";
@@ -43,6 +46,7 @@ namespace Pachik
         public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
         {
             Players = _players;
+            DeadIds = new List<byte>();
             byte[] gridCards = InitCardsData(CardsData.Cards);
 
             protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
@@ -134,6 +138,11 @@ namespace Pachik
         public void AddPlayerFrag(Player player)
         {
             protectedData.AddPlayerFrag(player);
+        }
+
+        public void AddDeadId(byte id)
+        {
+            DeadIds.Add(id);
         }
 
         public Player Winner()
