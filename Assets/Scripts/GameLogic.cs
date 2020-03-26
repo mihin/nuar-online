@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Timers;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -156,8 +157,18 @@ public class GameLogic : MonoBehaviour
     }
     void CardClickHandler(Card card)
     {
-        OnTurnShoot(card);
-        OnGameStateChange(EGameState.TURN_FINISH);
+        bool result = false;
+        switch (gameDataManager.GetGameState())
+        {
+            case EGameState.TURN_SHOOT:
+                result = OnTurnShoot(card);
+                break;
+            case EGameState.TURN_ASK:
+                result = OnTurnAsk(card);
+                break;
+        }
+        if (result)
+            OnGameStateChange(EGameState.TURN_FINISH);
     }
     void MoveButtonClickHandler(int index, MoveButton.Direction direction)
     {
@@ -241,17 +252,15 @@ public class GameLogic : MonoBehaviour
                 prefabs[count].Card = cards[i, j];
                 prefabs[count].gameObject.SetActive(true);
 
-                if (ActivePlayer.Card == cards[i, j])
+                Player player = gameDataManager.Players.Find(p => p.Card == cards[i, j]);
+                if (player != null)
                 {
-                    prefabs[count].isMy = true;
-                    playersGridPos[ActivePlayer.PlayerId.GetHashCode()] = new Vector2(i, j);
+                    playersGridPos[player.PlayerId.GetHashCode()] = new Vector2(i, j);
                     //playersGridPos.Insert(ActivePlayer.PlayerId.GetHashCode(), new Vector2(i, j));
                     //playersGridPos.Add(new Vector2(i, j));
                 }
-                else
-                {
-                    prefabs[count].isMy = false;
-                }
+
+                prefabs[count].isMy = player != null && player.PlayerId == ActivePlayer.PlayerId;
 
                 count++;
             }
@@ -321,7 +330,7 @@ public class GameLogic : MonoBehaviour
         UpdateField();
     }
 
-    void OnTurnShoot(Card card)
+    bool OnTurnShoot(Card card)
     {
         foreach (Player player in gameDataManager.Players)
         {
@@ -331,9 +340,60 @@ public class GameLogic : MonoBehaviour
                 gameDataManager.AddDeadId(card.id);
                 gameDataManager.AddPlayerFrag(gameDataManager.GetCurrentTurnPlayer());
                 gameDataManager.DealRoleToPlayer(player);
-                return;
+                return true;
             }
         }
+
+        return true;
+    }
+
+    bool OnTurnAsk(Card card)
+    {
+        Card[,] cards = gameDataManager.GetGridCards();
+        List<Player> players = new List<Player>();
+        bool breakLoop = false;
+        for (int i = 0; i < cards.GetLength(0); i++)
+        {
+            for (int j = 0; j < cards.GetLength(1); j++)
+            {
+                if (cards[i, j] == card)
+                {
+                    foreach (Player player in gameDataManager.Players)
+                    {
+                        if (player.PlayerId != gameDataManager.GetCurrentTurnPlayer().PlayerId)
+                        {
+                            Vector2 pos = playersGridPos[player.PlayerId.GetHashCode()];
+                            if (Mathf.Abs(i - pos.x) <= 1 && Mathf.Abs(j - pos.y) <= 1)
+                                players.Add(player);
+                        }
+                    }
+
+                    breakLoop = true;
+                    break;
+                }
+            }
+            if (breakLoop)
+                break;
+        }
+
+        if (players.Count == 0)
+            gui.TitleText = "There's no players nearby";
+        else
+        {
+            string result = "Nearby players: ";
+            for (int i = 0; i < players.Count; i++)
+                result += players[i].PlayerName + ", ";
+            result = result.Substring(0, result.Length - 2);
+            gui.TitleText = result;
+            OnGameStateChange(EGameState.GAME_ANIMATION);
+            Timer timer = new Timer(2000);
+            timer.Elapsed += (obj, e) => { OnGameStateChange(EGameState.TURN_FINISH); timer.Dispose(); };
+            timer.Enabled = true;
+            timer.Start();
+            return false;
+        }
+
+        return true;
     }
 
     void OnTurnMove(int index, MoveButton.Direction direction)
@@ -368,7 +428,6 @@ public class GameLogic : MonoBehaviour
                 break;
         }
         gameDataManager.SetGridCards(cards);
-        UpdateField();
     }
 
     bool TurnFinish()

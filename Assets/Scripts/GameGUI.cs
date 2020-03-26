@@ -19,7 +19,7 @@ public class GameGUI : MonoBehaviour
     public event OnButtonClick OnMoveChosenEvent;
     public event OnButtonClick OnCancelEvent;
 
-    private string TitleText {
+    public string TitleText {
         get { return Title.text; }
         set
         {
