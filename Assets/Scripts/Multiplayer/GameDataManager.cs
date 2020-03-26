@@ -100,6 +100,19 @@ namespace Pachik
             return result;
         }
 
+        public void SetGridCards(Card[,] cards)
+        {
+            byte[] result = new byte[cards.Length];
+            for (int i = 0; i < cards.GetLength(0); i++)
+            {
+                for (int j = 0; j < cards.GetLength(1); j++)
+                {
+                    result[i * cards.GetLength(1) + j] = cards[i, j].id;
+                }
+            }
+            protectedData.SetGridCards(result, (byte)cards.GetLength(1));
+        }
+
         public void DealRoleToPlayer(Player player)
         {
             player.Card = PoolOfCards.Pop();

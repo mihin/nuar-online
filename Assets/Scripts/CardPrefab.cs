@@ -67,5 +67,12 @@ public class CardPrefab : MonoBehaviour
 
     public class Factory : PlaceholderFactory<CardPrefab>
     {
+        public CardPrefab Create(Transform parent)
+        {
+            CardPrefab c = base.Create();
+            c.transform.parent = parent;
+            c.transform.localScale = Vector3.one;
+            return c;
+        }
     }
 }

@@ -10,6 +10,7 @@ public class GameGUI : MonoBehaviour
     [SerializeField] private Button AskButton;
     [SerializeField] private Button CancelButton;
     [SerializeField] private Text Title;
+    [SerializeField] private GameObject MoveButtons;
 
     public delegate void OnButtonClick();
     public event OnButtonClick OnGameStartEvent;
@@ -56,6 +57,7 @@ public class GameGUI : MonoBehaviour
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
         CancelButton.gameObject.SetActive(false);
+        MoveButtons.SetActive(false);
 
         TitleText = null;
     }
@@ -67,6 +69,7 @@ public class GameGUI : MonoBehaviour
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
         CancelButton.gameObject.SetActive(false);
+        MoveButtons.SetActive(false);
 
         TitleText = "Press Start Game";
     }
@@ -78,6 +81,7 @@ public class GameGUI : MonoBehaviour
         MoveButton.gameObject.SetActive(true);
         AskButton.gameObject.SetActive(true);
         CancelButton.gameObject.SetActive(false);
+        MoveButtons.SetActive(false);
 
         TitleText = playerName + ". Select an action";
     }
@@ -89,6 +93,7 @@ public class GameGUI : MonoBehaviour
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
         CancelButton.gameObject.SetActive(false);
+        MoveButtons.SetActive(false);
 
         TitleText = playerName + " wins!!";
     }
@@ -100,6 +105,19 @@ public class GameGUI : MonoBehaviour
         MoveButton.gameObject.SetActive(false);
         AskButton.gameObject.SetActive(false);
         CancelButton.gameObject.SetActive(true);
+        MoveButtons.SetActive(false);
+
+        TitleText = null;
+    }
+
+    public void HandleMove()
+    {
+        StartGameButton.gameObject.SetActive(false);
+        ShootButton.gameObject.SetActive(false);
+        MoveButton.gameObject.SetActive(false);
+        AskButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(true);
+        MoveButtons.SetActive(true);
 
         TitleText = null;
     }
@@ -118,7 +136,7 @@ public class GameGUI : MonoBehaviour
 
     public void HandleMoveMode()
     {
-        HandleHide();
+        HandleMove();
         TitleText = "Select a direction to move";
     }
 

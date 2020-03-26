@@ -3,11 +3,12 @@ using Zenject;
 
 public class GameInstaller : MonoInstaller
 {
-    [SerializeField] private Transform grid;
     [Inject] private CardsScriptableObject cardsScriptableObject;
+    [SerializeField] private GameObject moveButtonPrefab;
 
     public override void InstallBindings()
     {
-        Container.BindFactory<CardPrefab, CardPrefab.Factory>().FromComponentInNewPrefab(cardsScriptableObject.prefab).UnderTransform(grid);
+        Container.BindFactory<CardPrefab, CardPrefab.Factory>().FromComponentInNewPrefab(cardsScriptableObject.prefab);
+        Container.BindFactory<MoveButton, MoveButton.Factory>().FromComponentInNewPrefab(moveButtonPrefab);
     }
 }

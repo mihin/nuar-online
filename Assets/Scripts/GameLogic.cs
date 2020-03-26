@@ -8,12 +8,15 @@ using Pachik;
 public class GameLogic : MonoBehaviour
 {
     [Inject] private CardPrefab.Factory CardsPrefabFactory;
+    [Inject] private MoveButton.Factory MoveButtonPrefabFactory;
     [Inject] private CardsScriptableObject CardsData;
 
     private List<CardPrefab> prefabs = new List<CardPrefab>();
+    private List<MoveButton> moveButtons = new List<MoveButton>();
     private Dictionary<Card, CardPrefab> cardToPrefab = new Dictionary<Card, CardPrefab>();
 
     [SerializeField] private GridLayoutGroup grid;
+    [SerializeField] private HorizontalOrVerticalLayoutGroup moveUp, moveDown, moveLeft, moveRight;
     [SerializeField] private GameGUI gui;
     protected GameDataManager gameDataManager;
 
@@ -113,6 +116,7 @@ public class GameLogic : MonoBehaviour
                 EnableCards();
                 break;
             case EGameState.TURN_FINISH:
+                gui.HandleHide();
                 if (TurnFinish()) return;
                 break;
             case EGameState.GAME_ANIMATION:
@@ -155,7 +159,12 @@ public class GameLogic : MonoBehaviour
     void CardClickHandler(Card card)
     {
         // TODO get direction of move
-        OnTurn(card, 2, Vector2.right);
+        OnTurn(2, MoveButton.Direction.Right);
+        OnGameStateChange(EGameState.TURN_FINISH);
+    }
+    void MoveButtonClickHandler(int index, MoveButton.Direction direction)
+    {
+        OnTurn(index, direction);
         OnGameStateChange(EGameState.TURN_FINISH);
     }
 
@@ -222,7 +231,7 @@ public class GameLogic : MonoBehaviour
             { 
                 if (prefabs.Count <= count)
                 {
-                    CardPrefab c = CardsPrefabFactory.Create();
+                    CardPrefab c = CardsPrefabFactory.Create(grid.transform);
                     c.enabled = false;
                     prefabs.Add(c);
 
@@ -231,6 +240,7 @@ public class GameLogic : MonoBehaviour
 
                 cardToPrefab.Add(cards[i, j], prefabs[count]);
                 prefabs[count].Card = cards[i, j];
+                prefabs[count].gameObject.SetActive(true);
 
                 if (ActivePlayer.Card == cards[i, j])
                 {
@@ -248,6 +258,37 @@ public class GameLogic : MonoBehaviour
             }
         }
 
+        for (int i = count; i < cardToPrefab.Count; i++)
+        {
+            prefabs[i].gameObject.SetActive(false);
+        }
+
+        count = 0;
+        UpdateMoveButtons(moveUp.transform, MoveButton.Direction.Up, cards.GetLength(0), ref count);
+        UpdateMoveButtons(moveDown.transform, MoveButton.Direction.Down, cards.GetLength(0), ref count);
+        UpdateMoveButtons(moveLeft.transform, MoveButton.Direction.Left, cards.GetLength(1), ref count);
+        UpdateMoveButtons(moveRight.transform, MoveButton.Direction.Right, cards.GetLength(1), ref count);
+
+        for (int i = count; i < moveButtons.Count; i++)
+        {
+            moveButtons[i].gameObject.SetActive(false);
+        }
+    }
+
+    void UpdateMoveButtons(Transform parent, MoveButton.Direction direction, int count, ref int all)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            if (moveButtons.Count <= all + i)
+            {
+                MoveButton mb = MoveButtonPrefabFactory.Create(parent, direction, i);
+                mb.OnClick += MoveButtonClickHandler;
+                moveButtons.Add(mb);
+            }
+            moveButtons[i].gameObject.SetActive(true);
+        }
+
+        all += count;
     }
 
     void DisplayError()
@@ -281,11 +322,11 @@ public class GameLogic : MonoBehaviour
         UpdateField();
     }
 
-    void OnTurn(Card card, int movePosition, Vector2 moveDirection)
+    void OnTurn(int index, MoveButton.Direction direction)
     {
         if (gameDataManager.GetGameState() == EGameState.TURN_MOVE)
         {
-            OnTurnMove(movePosition, moveDirection);
+            OnTurnMove(index, direction);
         }
         else
         {
@@ -293,23 +334,39 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    void OnTurnMove(int position, Vector2 direction)
+    void OnTurnMove(int index, MoveButton.Direction direction)
     {
-        if (direction == Vector2.left)
+        Card[,] cards = gameDataManager.GetGridCards();
+        Card temp = null;
+        switch (direction)
         {
-
-            //int i = position;
-            //Card card_0 = cards[i, 0];
-            //for (int j = 0; j < width - 1; j++)
-            //{
-            //    cards[i, j] = cards[i, (j + (int)direction.x) % width];
-            //}
-            //cards[i, width - 1] = card_0;
+            case MoveButton.Direction.Up:
+                temp = cards[0, index];
+                for (int i = 0; i < cards.GetLength(1) - 1; i++)
+                    cards[i, index] = cards[i + 1, index];
+                cards[cards.GetLength(1) - 1, index] = temp;
+                break;
+            case MoveButton.Direction.Down:
+                temp = cards[cards.GetLength(1) - 1, index];
+                for (int i = cards.GetLength(1) - 1; i > 0; i--)
+                    cards[i, index] = cards[i - 1, index];
+                cards[0, index] = temp;
+                break;
+            case MoveButton.Direction.Left:
+                temp = cards[index, 0];
+                for (int i = 0; i < cards.GetLength(0) - 1; i++)
+                    cards[index, i] = cards[index, i + 1];
+                cards[index, cards.GetLength(1) - 1] = temp;
+                break;
+            case MoveButton.Direction.Right:
+                temp = cards[index, cards.GetLength(0) - 1];
+                for (int i = cards.GetLength(0) - 1; i > 0; i--)
+                    cards[index, i] = cards[index, i - 1];
+                cards[index, 0] = temp;
+                break;
         }
-        else
-        {
-
-        }
+        gameDataManager.SetGridCards(cards);
+        UpdateField();
     }
 
     bool TurnFinish()
