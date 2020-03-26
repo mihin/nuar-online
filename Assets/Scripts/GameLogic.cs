@@ -24,14 +24,14 @@ public class GameLogic : MonoBehaviour
 
 
     //[SerializeField] protected EGameState currState = EGameState.NONE;
-    private List<Vector2> playersGridPos = new List<Vector2>();
+    private Dictionary<int, Vector2> playersGridPos = new Dictionary<int, Vector2>();
     public List<Transform> PlayerDeckPositions = new List<Transform>();
     //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
     protected void Awake()
     {
         MAX_PLAYERS = Mathf.Min(PlayerDeckPositions.Count, MAX_PLAYERS);
-        playersGridPos = new List<Vector2>(MAX_PLAYERS);
+        playersGridPos = new Dictionary<int, Vector2>(MAX_PLAYERS);
 
         InitGameData();
     }
@@ -235,8 +235,8 @@ public class GameLogic : MonoBehaviour
                 if (ActivePlayer.Card == cards[i, j])
                 {
                     prefabs[count].isMy = true;
-                    //playersGridPos[activePlayerId] = new Vector2(i, j);
-                    playersGridPos.Insert(ActivePlayer.PlayerId.GetHashCode(), new Vector2(i, j));
+                    playersGridPos[ActivePlayer.PlayerId.GetHashCode()] = new Vector2(i, j);
+                    //playersGridPos.Insert(ActivePlayer.PlayerId.GetHashCode(), new Vector2(i, j));
                     //playersGridPos.Add(new Vector2(i, j));
                 }
                 else
