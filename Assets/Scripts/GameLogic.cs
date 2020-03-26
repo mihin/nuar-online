@@ -24,7 +24,7 @@ public class GameLogic : MonoBehaviour
 
 
     //[SerializeField] protected EGameState currState = EGameState.NONE;
-    private List<Vector2> playersGridPos;
+    private List<Vector2> playersGridPos = new List<Vector2>();
     public List<Transform> PlayerDeckPositions = new List<Transform>();
     //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
 
@@ -213,6 +213,8 @@ public class GameLogic : MonoBehaviour
         int count = 0;
         Card[,] cards = gameDataManager.GetGridCards();
         Player ActivePlayer = gameDataManager.GetCurrentTurnPlayer();
+
+        //Debug.Log("UpdateField, " + ActivePlayer);
 
         for (int i = 0; i < cards.GetLength(0); i++)
         {

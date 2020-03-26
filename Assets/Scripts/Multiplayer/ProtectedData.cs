@@ -36,7 +36,7 @@ namespace Pachik
         public ProtectedData(List<string> players, string roomId, IEnumerable<byte> _cards, byte width)
         {
             playerIds = players;
-            currentTurnPlayerId = "";
+            currentTurnPlayerId = players[0];
             currentGameState = 0;
             CalculateKey(roomId);
             gridCards = _cards.ToArray();
@@ -66,11 +66,14 @@ namespace Pachik
             Decrypt();
             //result = gridCards;
             byte[,] result = new byte[gridWidth, gridCards.Length / gridWidth];
+            //Debug.Log("GetGridCards: " + result.GetLength(0) + ", " + result.GetLength(1));
+
             for (int i = 0; i < gridWidth; i++)
             {
-                for (int j = 0; j < gridCards.Length; j++)
+                for (int j = 0; j < result.GetLength(1); j++)
                 {
-                    result[i, j] = gridCards[i * j + j];
+                    result[i, j]
+                        = gridCards[i * j + j];
                 }
             }
             Encrypt();
@@ -99,7 +102,7 @@ namespace Pachik
         {
             Decrypt();
             string sss = string.Join(";", playerIds);
-            Debug.Log("SetPlayerRole" + sss + ", id = " + playerId);
+            //Debug.Log("SetPlayerRole" + playerIds[0] + ", "+ playerIds[1] + ", id = " + playerId + ", players: "  + playerIds.Count);
             int index = playerIds.FindIndex(id => id == playerId);
             playersRoleCard[index] = role;
             Encrypt();
@@ -185,9 +188,12 @@ namespace Pachik
             SWNetworkMessage message = new SWNetworkMessage();
             message.Push((Byte)gridCards.Length);
             message.Push(gridWidth);
+
             message.PushByteArray(gridCards);
 
-            message.PushUTF8LongString(String.Concat(playerIds, DELIMETER));
+            string idsString = string.Join(DELIMETER.ToString(), playerIds);
+
+            message.PushUTF8LongString(idsString);
 
             message.PushByteArray(playersFragCount.ToArray());
 

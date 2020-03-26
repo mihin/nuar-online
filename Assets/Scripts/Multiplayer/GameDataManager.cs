@@ -146,7 +146,8 @@ namespace Pachik
         }
 
         public Player GetCurrentTurnPlayer()
-        {
+        { 
+            //Debug.Log("GetCurrentTurnPlayer " + string.Join("::", Players.Select(p => p.PlayerId)) + ", id! " + protectedData.GetCurrentTurnPlayerId());
             return Players.Find(p => p.PlayerId == protectedData.GetCurrentTurnPlayerId());
         }
 
