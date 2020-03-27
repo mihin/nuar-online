@@ -12,7 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 0}
   m_Name: CardsData
   m_EditorClassIdentifier: Assembly-CSharp::CardsScriptableObject
-  prefab: {fileID: 2689422104129554347, guid: 64c2168bcd983ca429d36f7057ee9602, type: 3}
   Cards:
   - id: 0
     name: "\u0412\u0435\u0441\u0435\u043B\u0451\u0445\u0430"

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.3731193, g: 0.38073996, b: 0.35872698, a: 1}
+  m_IndirectSpecularColor: {r: 0.37311918, g: 0.3807398, b: 0.35872716, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -209,6 +209,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f91dfce320dee5347ad070c53d71a2c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cardPrefab: {fileID: 2689422104129554347, guid: 64c2168bcd983ca429d36f7057ee9602,
+    type: 3}
   moveButtonPrefab: {fileID: 5026619729548376186, guid: 623f74dc7ca87064ba07cfe794b9b751,
     type: 3}
 --- !u!224 &373670258 stripped
@@ -1087,6 +1089,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Pivot.y
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 4452315194952527068, guid: e29246fb83f7d42e18a341968d03cfde,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e29246fb83f7d42e18a341968d03cfde, type: 3}
