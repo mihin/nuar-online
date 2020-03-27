@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Timers;
 using UnityEngine;
@@ -24,6 +25,7 @@ public class GameLogic : MonoBehaviour
     private String errorMessage;
     private bool isOffline = true;
     private int MAX_PLAYERS = 6;
+    private Vector2 askPosition = Vector2.one * -1;
 
     //[SerializeField] protected EGameState currState = EGameState.NONE;
     private Dictionary<int, Vector2> playersGridPos = new Dictionary<int, Vector2>();
@@ -119,6 +121,7 @@ public class GameLogic : MonoBehaviour
                 if (TurnFinish()) return;
                 break;
             case EGameState.GAME_ANIMATION:
+                gui.HandleAnimation();
                 EnableCards(false);
                 break;
             case EGameState.GAME_FINISH:
@@ -217,6 +220,8 @@ public class GameLogic : MonoBehaviour
 
                 cardPrefabs.isActive = (currState == EGameState.TURN_ASK || currState == EGameState.TURN_SHOOT) &&
                     (Mathf.Abs(i - localXPos) <= 1 && Mathf.Abs(j - localYPos) <= 1 && (localXPos != i || localYPos != j));
+
+                cardPrefabs.isAsk = (askPosition.x >= 0 && askPosition.y >= 0) && (Mathf.Abs(i - askPosition.x) <= 1 && Mathf.Abs(j - askPosition.y) <= 1);
 
                 cardPrefabs.alive = !gameDataManager.DeadIds.Contains(cardPrefabs.Card.id);
 
@@ -368,32 +373,38 @@ public class GameLogic : MonoBehaviour
                         }
                     }
 
+                    askPosition = new Vector2(i, j);
+
                     breakLoop = true;
                     break;
                 }
             }
+
             if (breakLoop)
                 break;
         }
 
         if (players.Count == 0)
-            gui.TitleText = "There's no players nearby";
+            gui.TitleText = "There's no players in this area";
         else
         {
-            string result = "Nearby players: ";
+            string result = "Players in area: ";
             for (int i = 0; i < players.Count; i++)
                 result += players[i].PlayerName + ", ";
             result = result.Substring(0, result.Length - 2);
             gui.TitleText = result;
-            OnGameStateChange(EGameState.GAME_ANIMATION);
-            Timer timer = new Timer(2000);
-            timer.Elapsed += (obj, e) => { OnGameStateChange(EGameState.TURN_FINISH); timer.Dispose(); };
-            timer.Enabled = true;
-            timer.Start();
-            return false;
         }
 
-        return true;
+        OnGameStateChange(EGameState.GAME_ANIMATION);
+        StartCoroutine(AskAnimationCoroutine());
+        return false;
+    }
+
+    IEnumerator AskAnimationCoroutine()
+    {
+        yield return new WaitForSeconds(5);
+        askPosition = Vector2.one * -1;
+        OnGameStateChange(EGameState.TURN_FINISH);
     }
 
     void OnTurnMove(int index, MoveButton.Direction direction)

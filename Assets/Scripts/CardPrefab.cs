@@ -23,6 +23,7 @@ public class CardPrefab : MonoBehaviour
 
     public bool isMy = false;
     public bool isActive = false;
+    public bool isAsk = false;
 
     public delegate void OnCardClick(Card card);
     public event OnCardClick OnCardClickEvent;
@@ -40,7 +41,7 @@ public class CardPrefab : MonoBehaviour
 
     public void RefreshGraphics()
     {
-        image.color = !alive ? Color.red : isMy ? Color.green : Color.white;
+        image.color = !alive ? Color.red : isAsk? Color.yellow : isMy ? Color.green : Color.white;
         image.color *= alive && isActive ? 1f : 0.8f;
     }
 

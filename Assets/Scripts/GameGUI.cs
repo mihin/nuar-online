@@ -62,6 +62,16 @@ public class GameGUI : MonoBehaviour
         TitleText = null;
     }
 
+    public void HandleAnimation()
+    {
+        StartGameButton.gameObject.SetActive(false);
+        ShootButton.gameObject.SetActive(false);
+        MoveButton.gameObject.SetActive(false);
+        AskButton.gameObject.SetActive(false);
+        CancelButton.gameObject.SetActive(false);
+        MoveButtons.SetActive(false);
+    }
+
     public void HandleGameInit()
     {
         StartGameButton.gameObject.SetActive(true);
