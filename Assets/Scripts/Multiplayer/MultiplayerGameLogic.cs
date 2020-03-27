@@ -54,39 +54,22 @@ public class MultiplayerGameLogic : GameLogic
                 OnGameStateChange(EGameState.GAME_START);
 
                 netCode.ModifyGameData(gameDataManager.EncryptedData());
-
                 netCode.NotifyOtherPlayersGameStateChanged();
             }
         }
         else
         {
-            gameDataManager.ApplyEncrptedData(encryptedData);
-            EGameState currState = gameDataManager.GetGameState();
-            //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
-
-            if (currState > EGameState.GAME_START)
-            {
-                Debug.Log("Restore the game state");
-
-                //restore player's cards
-                //cardAnimator.DealDisplayingCards(localPlayer, gameDataManager.PlayerCards(localPlayer).Count, false);
-                //cardAnimator.DealDisplayingCards(remotePlayer, gameDataManager.PlayerCards(remotePlayer).Count, false);
-
-
-                //base.GameFlow();.
-                //gameDataManager.SetGameState(EGameState.GAME_START);
-                OnGameStateChange(EGameState.GAME_START);
-            }
+            OnGameDataChanged(encryptedData);
         }
     }
 
     public void OnGameDataChanged(EncryptedData encryptedData)
     {
         gameDataManager.ApplyEncrptedData(encryptedData);
-        EGameState currState = gameDataManager.GetGameState();
+        //EGameState currState = gameDataManager.GetGameState();
         //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
-
-        OnGameStateChange(currState);
+        //OnGameStateChange(currState);
+        GameFlow();
     }
 
     public void OnGameStateChanged()

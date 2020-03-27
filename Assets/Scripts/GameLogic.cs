@@ -88,12 +88,12 @@ public class GameLogic : MonoBehaviour
 
     protected void GameFlow()
     {
-        OnGameStateChange(gameDataManager.GetGameState());
+        OnGameStateChange(gameDataManager.GetGameState(), true);
     }
 
-    protected void OnGameStateChange(EGameState newState)
+    protected void OnGameStateChange(EGameState newState, bool forceUpdate = false)
     {
-        if (newState == gameDataManager.GetGameState())
+        if (newState == gameDataManager.GetGameState() && !forceUpdate)
             return;
 
         switch (newState)
@@ -142,7 +142,8 @@ public class GameLogic : MonoBehaviour
 
         Debug.Log("OnGameStateChange " + newState);
 
-        gameDataManager.SetGameState(newState);
+        if (!forceUpdate)
+            gameDataManager.SetGameState(newState);
         RefreshGraphics();
     }
 
