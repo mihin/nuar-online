@@ -10,7 +10,6 @@ public class CardEditor : Editor
     {
         CardsScriptableObject cardData = (CardsScriptableObject)target;
 
-        cardData.prefab = (GameObject)EditorGUILayout.ObjectField("Prefab", cardData.prefab, typeof(Object), true);
         var property = serializedObject.FindProperty("Cards");
         serializedObject.Update();
         EditorGUILayout.PropertyField(property, true);

@@ -25,6 +25,5 @@ public class Card
 [CreateAssetMenu(fileName = "CardsData", menuName = "ScriptableObjects/CardsScriptableObject", order = 1)]
 public class CardsScriptableObject : ScriptableObject
 {
-    public GameObject prefab;
     public List<Card> Cards;
 }
