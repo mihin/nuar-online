@@ -22,7 +22,7 @@ public class MultiplayerGameLogic : GameLogic
 
                 players.Find(p => p.PlayerId == NetworkClient.Instance.PlayerId).IsLocal = true;
 
-                if (CardsData == null || CardsData.Cards == null)
+                if (CardsData == null || CardsData.Cards == null || CardsData.Cards.Count == 0)
                 {
                     CardsData = new CardsScriptableObject();
                     CardsData.LoadCachedData();
