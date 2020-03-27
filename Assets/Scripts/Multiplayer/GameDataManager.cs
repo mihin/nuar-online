@@ -93,7 +93,7 @@ namespace Pachik
             byte[,] grid = protectedData.GetGridCards();
             Card[,] result = new Card[grid.GetLength(0), grid.GetLength(1)];
 
-            for (int i = 0; i<grid.GetLength(0); i++)
+            for (int i = 0; i < grid.GetLength(0); i++)
             {
                 for (int j = 0; j < grid.GetLength(1); j++)
                 {

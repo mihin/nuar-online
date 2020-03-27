@@ -235,6 +235,7 @@ public class GameLogic : MonoBehaviour
 
         int count = 0;
         Card[,] cards = gameDataManager.GetGridCards();
+        grid.constraintCount = cards.GetLength(1);
 
         for (int i = 0; i < cards.GetLength(0); i++)
         {
@@ -267,37 +268,37 @@ public class GameLogic : MonoBehaviour
             }
         }
 
-        for (int i = count; i < cardToPrefab.Count; i++)
+        for (int i = count; i < prefabs.Count; i++)
         {
             prefabs[i].gameObject.SetActive(false);
         }
 
-        count = 0;
-        UpdateMoveButtons(moveUp.transform, MoveButton.Direction.Up, cards.GetLength(0), ref count);
-        UpdateMoveButtons(moveDown.transform, MoveButton.Direction.Down, cards.GetLength(0), ref count);
-        UpdateMoveButtons(moveLeft.transform, MoveButton.Direction.Left, cards.GetLength(1), ref count);
-        UpdateMoveButtons(moveRight.transform, MoveButton.Direction.Right, cards.GetLength(1), ref count);
-
-        for (int i = count; i < moveButtons.Count; i++)
-        {
-            moveButtons[i].gameObject.SetActive(false);
-        }
+        UpdateMoveButtons(moveUp.transform, MoveButton.Direction.Up, cards.GetLength(1));
+        UpdateMoveButtons(moveLeft.transform, MoveButton.Direction.Left, cards.GetLength(0));
+        UpdateMoveButtons(moveDown.transform, MoveButton.Direction.Down, cards.GetLength(1));
+        UpdateMoveButtons(moveRight.transform, MoveButton.Direction.Right, cards.GetLength(0));
     }
 
-    void UpdateMoveButtons(Transform parent, MoveButton.Direction direction, int count, ref int all)
+    void UpdateMoveButtons(Transform parent, MoveButton.Direction direction, int count)
     {
-        for (int i = 0; i < count; i++)
+        int index = (int)direction * 5;
+        for (int i = index; i < index + count; i++)
         {
-            if (moveButtons.Count <= all + i)
+            if (moveButtons.Count <= i)
             {
-                MoveButton mb = MoveButtonPrefabFactory.Create(parent, direction, i);
+                MoveButton mb = MoveButtonPrefabFactory.Create(parent, direction, i - index);
                 mb.OnClick += MoveButtonClickHandler;
                 moveButtons.Add(mb);
             }
             moveButtons[i].gameObject.SetActive(true);
         }
 
-        all += count;
+        count += index;
+
+        for (int i = count; i < index + 5; i++)
+        {
+            moveButtons[i].gameObject.SetActive(false);
+        }
     }
 
     void DisplayError()
@@ -442,12 +443,87 @@ public class GameLogic : MonoBehaviour
             return true;
         }
 
+        TryToCollapse();
+
         gameDataManager.NextTurnPlayer();
 
         UpdateField();
 
         OnGameStateChange(EGameState.TURN_IDLE);
         return true;
+    }
+
+    void TryToCollapse()
+    {
+        Card[,] cards = gameDataManager.GetGridCards();
+        List<Vector2> cardsToRemove = new List<Vector2>();
+        bool verticalCollapse = false;
+        for (int i = 0; i < cards.GetLength(0); i++)
+        {
+            for (int j = 0; j < cards.GetLength(1); j++)
+            {
+                if (gameDataManager.DeadIds.Contains(cards[i, j].id))
+                {
+                    verticalCollapse = true;
+                    break;
+                }
+                verticalCollapse = false;
+            }
+
+            if (!verticalCollapse)
+                break;
+        }
+
+        if (verticalCollapse)
+        {
+            Card[,] newCards = new Card[cards.GetLength(0),cards.GetLength(1) - 1];
+            for (int i = 0; i < cards.GetLength(0); i++)
+            {
+                int count = 0;
+                for (int j = 0; j < cards.GetLength(1); j++)
+                {
+                    if (gameDataManager.DeadIds.Contains(cards[i, j].id))
+                        continue;
+                    newCards[i, count++] = cards[i, j];
+                }
+            }
+            gameDataManager.SetGridCards(newCards);
+            return;
+        }
+
+        bool horizontalCollapse = false;
+        for (int i = 0; i < cards.GetLength(1); i++)
+        {
+            for (int j = 0; j < cards.GetLength(0); j++)
+            {
+                if (gameDataManager.DeadIds.Contains(cards[j, i].id))
+                {
+                    horizontalCollapse = true;
+                    break;
+                }
+                horizontalCollapse = false;
+            }
+
+            if (!horizontalCollapse)
+                break;
+        }
+
+        if (horizontalCollapse)
+        {
+            Card[,] newCards = new Card[cards.GetLength(0) - 1, cards.GetLength(1)];
+            for (int i = 0; i < cards.GetLength(1); i++)
+            {
+                int count = 0;
+                for (int j = 0; j < cards.GetLength(0); j++)
+                {
+                    if (gameDataManager.DeadIds.Contains(cards[j, i].id))
+                        continue;
+
+                    newCards[count++, i] = cards[j, i];
+                }
+            }
+            gameDataManager.SetGridCards(newCards);
+        }
     }
 
     void EnableCards(bool enable = true)

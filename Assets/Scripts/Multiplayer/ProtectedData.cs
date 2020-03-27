@@ -65,11 +65,11 @@ namespace Pachik
         {
             Decrypt();
             //result = gridCards;
-            byte[,] result = new byte[gridWidth, gridCards.Length / gridWidth];
+            byte[,] result = new byte[gridCards.Length / gridWidth, gridWidth];
             //Debug.Log("GetGridCards: " + result.GetLength(0) + ", " + result.GetLength(1));
 
             int count = 0;
-            for (int i = 0; i < gridWidth; i++)
+            for (int i = 0; i < result.GetLength(0); i++)
             {
                 for (int j = 0; j < result.GetLength(1); j++)
                 {
