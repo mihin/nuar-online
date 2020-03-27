@@ -409,25 +409,25 @@ public class GameLogic : MonoBehaviour
         {
             case MoveButton.Direction.Up:
                 temp = cards[0, index];
-                for (int i = 0; i < cards.GetLength(1) - 1; i++)
+                for (int i = 0; i < cards.GetLength(0) - 1; i++)
                     cards[i, index] = cards[i + 1, index];
-                cards[cards.GetLength(1) - 1, index] = temp;
+                cards[cards.GetLength(0) - 1, index] = temp;
                 break;
             case MoveButton.Direction.Down:
-                temp = cards[cards.GetLength(1) - 1, index];
-                for (int i = cards.GetLength(1) - 1; i > 0; i--)
+                temp = cards[cards.GetLength(0) - 1, index];
+                for (int i = cards.GetLength(0) - 1; i > 0; i--)
                     cards[i, index] = cards[i - 1, index];
                 cards[0, index] = temp;
                 break;
             case MoveButton.Direction.Left:
                 temp = cards[index, 0];
-                for (int i = 0; i < cards.GetLength(0) - 1; i++)
+                for (int i = 0; i < cards.GetLength(1) - 1; i++)
                     cards[index, i] = cards[index, i + 1];
                 cards[index, cards.GetLength(1) - 1] = temp;
                 break;
             case MoveButton.Direction.Right:
-                temp = cards[index, cards.GetLength(0) - 1];
-                for (int i = cards.GetLength(0) - 1; i > 0; i--)
+                temp = cards[index, cards.GetLength(1) - 1];
+                for (int i = cards.GetLength(1) - 1; i > 0; i--)
                     cards[index, i] = cards[index, i - 1];
                 cards[index, 0] = temp;
                 break;
