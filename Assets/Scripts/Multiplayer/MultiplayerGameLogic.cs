@@ -21,7 +21,13 @@ public class MultiplayerGameLogic : GameLogic
                 List<Player> players = reply.players.Select(swPlayer => Player.fromNetworkPlayer(swPlayer).SetPosition(PlayerDeckPositions[count++].position)).ToList();
 
                 players.Find(p => p.PlayerId == NetworkClient.Instance.PlayerId).IsLocal = true;
-                
+
+                if (CardsData == null || CardsData.Cards == null)
+                {
+                    CardsData = new CardsScriptableObject();
+                    CardsData.LoadCachedData();
+                }
+
                 gameDataManager = new GameDataManager(players, CardsData.Cards, NetworkClient.Lobby.RoomId);
                 netCode.EnableRoomPropertyAgent();
                 
