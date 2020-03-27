@@ -6,7 +6,7 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/SWExample/Scenes/LobbyScene.unity
+    path: Assets/scenes/LobbyScene.unity
     guid: cf2586549363c4aceb3803620a7e19aa
   - enabled: 1
     path: Assets/scenes/NuarMultiplayer.unity

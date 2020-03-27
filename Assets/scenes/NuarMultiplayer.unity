@@ -209,6 +209,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f91dfce320dee5347ad070c53d71a2c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cardPrefab: {fileID: 2689422104129554347, guid: 64c2168bcd983ca429d36f7057ee9602,
+    type: 3}
   moveButtonPrefab: {fileID: 5026619729548376186, guid: 623f74dc7ca87064ba07cfe794b9b751,
     type: 3}
 --- !u!1 &352180072 stripped
