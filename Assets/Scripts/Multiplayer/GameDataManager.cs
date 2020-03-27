@@ -118,15 +118,8 @@ namespace Pachik
 
         public void DealRoleToPlayer(Player player)
         {
-            player.Card = PoolOfCards.Pop();
+            player.ReceiveRoleCard(PoolOfCards.Pop());
             protectedData.SetPlayerRole(player.PlayerId, player.Card.id);
-        }
-
-        public Player GetPlayerRole(Player player)
-        {
-            byte cardId = protectedData.GetPlayerRole(player.PlayerId);
-            player.Card = new Card () { id = cardId };  // TODO fetch Card by ID
-            return player;
         }
 
         public byte PlayerFrags(Player player)
@@ -134,8 +127,9 @@ namespace Pachik
             return protectedData.PlayerFrags(player);
         }
 
-        public void AddPlayerFrag(Player player)
+        public void AddPlayerFrag(Player player, Card fragCard)
         {
+            player.ReceiveFragCard(fragCard);
             protectedData.AddPlayerFrag(player);
         }
 

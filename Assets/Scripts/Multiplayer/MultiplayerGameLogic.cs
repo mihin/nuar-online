@@ -8,11 +8,6 @@ using UnityEngine.SceneManagement;
 public class MultiplayerGameLogic : GameLogic
 {
     NetCode netCode;
-
-    GameDataManager gameDataManager;
-
-    Player currentTurnPlayer;
-
     
     protected new void InitGameData()
     {
@@ -22,13 +17,11 @@ public class MultiplayerGameLogic : GameLogic
         {
             if (successful)
             {
-                List<Player> players = reply.players.Select(swPlayer => Player.fromNetworkPlayer(swPlayer)).ToList();
+                int count = 0;
+                List<Player> players = reply.players.Select(swPlayer => Player.fromNetworkPlayer(swPlayer).SetPosition(PlayerDeckPositions[count++].position)).ToList();
 
-                for (int i = 0; i < players.Count; i++)
-                {
-                    players[i].Position = PlayerDeckPositions[i].position;
-                }
-
+                players.Find(p => p.PlayerId == NetworkClient.Instance.PlayerId).IsLocal = true;
+                
                 gameDataManager = new GameDataManager(players, CardsData.Cards, NetworkClient.Lobby.RoomId);
                 netCode.EnableRoomPropertyAgent();
                 
@@ -38,7 +31,6 @@ public class MultiplayerGameLogic : GameLogic
             {
                 Debug.LogError("Failed to get players in room.");
             }
-
         });
     }
     
@@ -64,7 +56,6 @@ public class MultiplayerGameLogic : GameLogic
         {
             gameDataManager.ApplyEncrptedData(encryptedData);
             EGameState currState = gameDataManager.GetGameState();
-            currentTurnPlayer = gameDataManager.GetCurrentTurnPlayer();
             //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
 
             if (currState > EGameState.GAME_START)
@@ -79,7 +70,6 @@ public class MultiplayerGameLogic : GameLogic
                 //base.GameFlow();.
                 //gameDataManager.SetGameState(EGameState.GAME_START);
                 OnGameStateChange(EGameState.GAME_START);
-
             }
         }
     }
@@ -88,7 +78,6 @@ public class MultiplayerGameLogic : GameLogic
     {
         gameDataManager.ApplyEncrptedData(encryptedData);
         EGameState currState = gameDataManager.GetGameState();
-        currentTurnPlayer = gameDataManager.GetCurrentTurnPlayer();
         //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
 
         OnGameStateChange(currState);

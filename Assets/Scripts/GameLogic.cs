@@ -25,10 +25,18 @@ public class GameLogic : MonoBehaviour
     private bool isOffline = true;
     private int MAX_PLAYERS = 6;
 
-    //[SerializeField] protected EGameState currState = EGameState.NONE;
     private Dictionary<int, Vector2> playersGridPos = new Dictionary<int, Vector2>();
     public List<Transform> PlayerDeckPositions = new List<Transform>();
-    //[SerializeField] private int playedId = -1;  // Player number 0..MAX_PLAYERS-1
+
+    protected Player ActivePlayer
+    {
+        get { return gameDataManager.GetCurrentTurnPlayer(); }
+    }
+    
+    protected List<Player> NonActivePlayers
+    {
+        get { return gameDataManager.Players.FindAll(p => p != ActivePlayer); }
+    }
 
     protected void Awake()
     {
@@ -180,21 +188,12 @@ public class GameLogic : MonoBehaviour
     {
         List<Player> Players = new List<Player>(MAX_PLAYERS);
 
-        Player localPlayer = new Player();
-        localPlayer.PlayerId = "offline-player";
-        localPlayer.PlayerName = "Player1";
-        localPlayer.Position = PlayerDeckPositions[0].position;
-        //localPlayer.BookPosition = BookPositions[0].position;
+        Player localPlayer = new Player("offline-player", "Player1", PlayerDeckPositions[0].position);
+        localPlayer.IsLocal = true;
         Players.Add(localPlayer);
 
-
-        Player remotePlayer = new Player();
-        remotePlayer.PlayerId = "offline-bot";
-        remotePlayer.PlayerName = "Bot1";
-        remotePlayer.Position = PlayerDeckPositions[1].position;
-        //remotePlayer.BookPosition = BookPositions[1].position;
-        remotePlayer.IsAI = true;
-
+        Player remotePlayer = new Player("offline-bot", "Bot1", PlayerDeckPositions[1].position);
+        // remotePlayer.IsAI = true;
         Players.Add(remotePlayer);
 
         return Players;
@@ -202,7 +201,7 @@ public class GameLogic : MonoBehaviour
 
     void RefreshGraphics()
     {
-        int activePlayerId = gameDataManager.GetCurrentTurnPlayer().PlayerId.GetHashCode();
+        int activePlayerId = ActivePlayer.PlayerId.GetHashCode();
         int localXPos = (int)playersGridPos[activePlayerId].x;
         int localYPos = (int)playersGridPos[activePlayerId].y;
 
@@ -231,9 +230,6 @@ public class GameLogic : MonoBehaviour
 
         int count = 0;
         Card[,] cards = gameDataManager.GetGridCards();
-        Player ActivePlayer = gameDataManager.GetCurrentTurnPlayer();
-
-        //Debug.Log("UpdateField, " + ActivePlayer);
 
         for (int i = 0; i < cards.GetLength(0); i++)
         {
@@ -332,13 +328,13 @@ public class GameLogic : MonoBehaviour
 
     bool OnTurnShoot(Card card)
     {
-        foreach (Player player in gameDataManager.Players)
+        foreach (Player player in NonActivePlayers)
         {
             if (player.Card.id == card.id)
             {
                 prefabs.Find(c => c.Card.id == card.id).Kill();
                 gameDataManager.AddDeadId(card.id);
-                gameDataManager.AddPlayerFrag(gameDataManager.GetCurrentTurnPlayer());
+                gameDataManager.AddPlayerFrag(ActivePlayer, card);
                 gameDataManager.DealRoleToPlayer(player);
                 return true;
             }
@@ -358,14 +354,11 @@ public class GameLogic : MonoBehaviour
             {
                 if (cards[i, j] == card)
                 {
-                    foreach (Player player in gameDataManager.Players)
+                    foreach (Player player in NonActivePlayers)
                     {
-                        if (player.PlayerId != gameDataManager.GetCurrentTurnPlayer().PlayerId)
-                        {
-                            Vector2 pos = playersGridPos[player.PlayerId.GetHashCode()];
-                            if (Mathf.Abs(i - pos.x) <= 1 && Mathf.Abs(j - pos.y) <= 1)
-                                players.Add(player);
-                        }
+                        Vector2 pos = playersGridPos[player.PlayerId.GetHashCode()];
+                        if (Mathf.Abs(i - pos.x) <= 1 && Mathf.Abs(j - pos.y) <= 1)
+                            players.Add(player);
                     }
 
                     breakLoop = true;
@@ -461,7 +454,7 @@ public class GameLogic : MonoBehaviour
 
     void ShowMakeTurnGUI()
     {
-        gui.HandleTurnStart(gameDataManager.GetCurrentTurnPlayer().PlayerName);
+        gui.HandleTurnStart(ActivePlayer.PlayerName);
     }
 
 }
