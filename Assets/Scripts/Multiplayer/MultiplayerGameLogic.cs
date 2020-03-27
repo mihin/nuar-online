@@ -9,7 +9,7 @@ public class MultiplayerGameLogic : GameLogic
 {
     NetCode netCode;
     
-    protected new void InitGameData()
+    protected override void InitGameData()
     {
         netCode = FindObjectOfType<NetCode>();
         

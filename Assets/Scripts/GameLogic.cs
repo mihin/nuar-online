@@ -77,7 +77,7 @@ public class GameLogic : MonoBehaviour
     }
 
     // TODO override for multiplayer
-    protected void InitGameData()
+    protected virtual void InitGameData()
     {
         List<Player> players = InitPlayersOffline();
 
