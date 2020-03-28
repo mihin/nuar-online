@@ -22,25 +22,27 @@ namespace Pachik
     {
         const char DELIMETER = '|';
 
-        byte[] gridCards;
-        byte gridWidth;
-        List<string> playerIds;
-        List<byte> playersRoleCard;
-        List<byte> playersFragCount;
-        string currentTurnPlayerId;
-        byte currentGameState;
+        [SerializeField] byte[] gridCards;
+        [SerializeField] byte gridWidth;
+        [SerializeField] List<string> playerIds;
+        [SerializeField] List<byte> playersRoleCard;
+        [SerializeField] List<byte> playersFragCount;
+        [SerializeField] string currentTurnPlayerId;
+        [SerializeField] byte currentGameState;
 
         byte[] encryptionKey;
         byte[] safeData;
 
-        public ProtectedData(List<string> players, string roomId, IEnumerable<byte> _cards, byte width)
+        public ProtectedData(List<string> players, string roomId)
         {
             playerIds = players;
             currentTurnPlayerId = players[0];
             currentGameState = 0;
             CalculateKey(roomId);
-            gridCards = _cards.ToArray();
-            gridWidth = width;
+            // gridCards = _cards.ToArray();
+            // gridWidth = width;
+            gridCards = new byte[0];
+            gridWidth = 0;
 
             playersFragCount = new List<byte>(playerIds.Count);
             playersRoleCard = new List<byte>(playerIds.Count);
@@ -54,7 +56,6 @@ namespace Pachik
 
         public void SetGridCards(byte[] cardValues, byte width)
         {
-
             Decrypt();
             gridCards = cardValues;
             gridWidth = width;
@@ -205,15 +206,15 @@ namespace Pachik
 
             safeData = AES.EncryptAES128(message.ToArray(), encryptionKey);
 
-
+#if !UNITY_EDITOR
+            gridWidth = 0;
             gridCards = new byte[25];
             playerIds = new List<string>();
             playersFragCount = new List<byte>();
             playersRoleCard = new List<byte>();
             currentTurnPlayerId = null;
             currentGameState = 0;
-            gridWidth = 0;
-
+#endif
         }
 
         void Decrypt()

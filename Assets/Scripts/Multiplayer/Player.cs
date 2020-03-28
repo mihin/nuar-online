@@ -26,7 +26,7 @@ namespace Pachik
 
         
         private List<Card> Frags = new List<Card>();
-        private int NumberOfFrags
+        public int NumberOfFrags
         {
             get { return Frags.Count; }
         }
@@ -56,6 +56,11 @@ namespace Pachik
         public void ReceiveFragCard(Card card)
         {
             Frags.Add(Card);
+        }
+
+        public void ClearFrags()
+        {
+            Frags.Clear();
         }
 
         public bool Equals(Player other)

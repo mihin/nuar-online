@@ -19,15 +19,15 @@ public class GameLogic : MonoBehaviour
 
     [SerializeField] private GridLayoutGroup grid;
     [SerializeField] private HorizontalOrVerticalLayoutGroup moveUp, moveDown, moveLeft, moveRight;
-    [SerializeField] private GameGUI gui;
-    protected GameDataManager gameDataManager;
+    [SerializeField] protected GameGUI gui;
+    [SerializeField] protected GameDataManager gameDataManager;
 
     private String errorMessage;
     private bool isOffline = true;
     private int MAX_PLAYERS = 6;
     private Vector2 askPosition = Vector2.one * -1;
 
-    private Dictionary<int, Vector2> playersGridPos = new Dictionary<int, Vector2>();
+    [SerializeField] private Dictionary<int, Vector2> playersGridPos = new Dictionary<int, Vector2>();
     public List<Transform> PlayerDeckPositions = new List<Transform>();
 
     protected Player ActivePlayer
@@ -81,9 +81,15 @@ public class GameLogic : MonoBehaviour
     {
         List<Player> players = InitPlayersOffline();
 
-        gameDataManager = new GameDataManager(players, CardsData.Cards);
+        gameDataManager = new GameDataManager(players);
+        if (CardsData == null || CardsData.Cards == null || CardsData.Cards.Count == 0)
+        {
+            CardsData = new CardsScriptableObject();
+            CardsData.LoadCachedData();
+        }
+        gameDataManager.SetHostCards(CardsData.Cards);
 
-        OnGameStateChange(EGameState.IDLE);
+        OnGameStateChange(EGameState.IDLE);    // TODO move waiting for Start button to Lobby
     }
 
     protected void GameFlow()
@@ -100,7 +106,7 @@ public class GameLogic : MonoBehaviour
         {
             case EGameState.IDLE:
                 gui.HandleHide();
-                Invoke("ShowStartGameGUI", 1);
+                Invoke("ShowStartGameGUI", .5f);
                 gameDataManager.SetGameState(newState);
                 return;
             case EGameState.ERROR:
@@ -110,7 +116,7 @@ public class GameLogic : MonoBehaviour
                 StartGame();
                 break;
             case EGameState.TURN_IDLE:
-                Invoke("ShowMakeTurnGUI", 1);
+                Invoke("ShowMakeTurnGUI", .5f);
                 break;
             case EGameState.TURN_SHOOT:
                 gui.HandleShootMode();
@@ -230,7 +236,7 @@ public class GameLogic : MonoBehaviour
         }
     }
 
-    void UpdateField()
+    protected void RedrawGameGrid()
     {
         cardToPrefab.Clear();
 
@@ -308,18 +314,10 @@ public class GameLogic : MonoBehaviour
         Debug.LogError(errorMessage != null ? errorMessage : "Unknown error");
     }
 
-    void StartGame()
+    protected virtual void StartGame()
     {
-        //if (!CheckPlayers())
-        //{
-        //    errorMessage = "Can not start the game, not enough players";
-        //    OnGameStateChange(EGameState.ERROR);
-        //    return;
-        //}
-
-        //activePlayerId = 0;
+        gui.HandleHide();
         HandoutRoles();
-
         OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
     }
 
@@ -330,7 +328,7 @@ public class GameLogic : MonoBehaviour
             gameDataManager.DealRoleToPlayer(player);
         }
 
-        UpdateField();
+        RedrawGameGrid();
     }
 
     bool OnTurnShoot(Card card)
@@ -448,7 +446,7 @@ public class GameLogic : MonoBehaviour
 
         gameDataManager.NextTurnPlayer();
 
-        UpdateField();
+        RedrawGameGrid();
 
         OnGameStateChange(EGameState.TURN_IDLE);
         return true;

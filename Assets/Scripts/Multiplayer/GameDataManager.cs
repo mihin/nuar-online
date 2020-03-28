@@ -20,11 +20,11 @@ namespace Pachik
 
         [Inject] private CardsScriptableObject CardsData;
 
-        [SerializeField] ProtectedData protectedData;
+        [SerializeField] private ProtectedData protectedData;
 
         public List<Player> Players { get; }
 
-        private Stack<Card> PoolOfCards;    // deck
+        [SerializeField] private Stack<Card> PoolOfCards;    // deck !HOST only
 
         public List<byte> DeadIds { get; }
 
@@ -33,44 +33,39 @@ namespace Pachik
         //public Card[,] Cards { get; } = new Card[MAX_WIDTH, MAX_HEIGHT];    // grid
 
 
-        public GameDataManager(List<Player> _players, List<Card> allCards, string roomId = "1234567890123456")
+        public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
         {
             Players = _players;
             DeadIds = new List<byte>();
-            byte[] gridCards = InitCardsData(allCards);
+            // byte[] gridCards = InitCardsData(allCards);
 
-            protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
+            protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId/*, gridCards, MAX_WIDTH*/);
         }
 
-        // public GameDataManager(List<Player> _players, string roomId = "1234567890123456")
-        // {
-        //     Players = _players;
-        //     DeadIds = new List<byte>();
-        //     byte[] gridCards = InitCardsData(CardsData.Cards);
-        //
-        //     protectedData = new ProtectedData(_players.Select(player => player.PlayerId).ToList(), roomId, gridCards, MAX_WIDTH);
-        // }
+        public void SetHostCards(List<Card> allCards)
+        {
+            byte[] gridCards = InitCardsData(allCards);
+            protectedData.SetGridCards(gridCards, (byte)MAX_WIDTH);
+        }
 
-        byte[] InitCardsData(List<Card> allCards)
+        public void SetClientCards(List<Card> allCards)
+        {
+            // forming static Id to Card dictionary
+            if (CardsDictionary == null || CardsDictionary.Count == 0)
+                CardsDictionary = allCards.ToDictionary(card => card.id);
+        }
+        
+        private byte[] InitCardsData(List<Card> allCards)
         {
             List<Card> newCards = new List<Card>(allCards.Take(MAX_WIDTH * MAX_HEIGHT));
             newCards.Shuffle();
             // forming Deck
             PoolOfCards = new Stack<Card>(newCards);
             // forming static Id to Card dictionary
-            if (CardsDictionary == null)
+            if (CardsDictionary == null || CardsDictionary.Count == 0)
                 CardsDictionary = newCards.ToDictionary(card => card.id);
 
-            List<Card> tempDeck = newCards; // new List<Card>(PoolOfCards);
-            //for (int i = 0; i < width; i++)
-            //{
-            //    for (int j = 0; j < height; j++)
-            //    {
-            //        int index = UnityEngine.Random.Range(0, tempDeck.Count);
-            //        Cards[i, j] = tempDeck[index];
-            //        tempDeck.RemoveAt(index);
-            //    }
-            //}
+            List<Card> tempDeck = newCards;
 
             byte[] result = new byte[MAX_WIDTH * MAX_HEIGHT];
             for (int i = 0; i < MAX_WIDTH * MAX_HEIGHT; i++)
@@ -121,7 +116,7 @@ namespace Pachik
             player.ReceiveRoleCard(PoolOfCards.Pop());
             protectedData.SetPlayerRole(player.PlayerId, player.Card.id);
         }
-
+        
         public byte PlayerFrags(Player player)
         {
             return protectedData.PlayerFrags(player);
@@ -136,6 +131,18 @@ namespace Pachik
         public void AddDeadId(byte id)
         {
             DeadIds.Add(id);
+        }
+
+        public void UpdatePlayerRoleAndFrags()
+        {
+            foreach (Player player in Players)
+            {
+                player.ReceiveRoleCard(CardsDictionary[protectedData.GetPlayerRole(player.PlayerId)]);
+                while (player.NumberOfFrags < protectedData.PlayerFrags(player))
+                {
+                    player.ReceiveFragCard(player.Card);    // FIXME update with actual frag card
+                }
+            }
         }
 
         public Player Winner()

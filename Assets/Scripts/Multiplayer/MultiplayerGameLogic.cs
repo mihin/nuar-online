@@ -8,30 +8,34 @@ using UnityEngine.SceneManagement;
 public class MultiplayerGameLogic : GameLogic
 {
     NetCode netCode;
-    
+
     protected override void InitGameData()
     {
         netCode = FindObjectOfType<NetCode>();
-        
+
         NetworkClient.Lobby.GetPlayersInRoom((successful, reply, error) =>
         {
             if (successful)
             {
                 int count = 0;
-                List<Player> players = reply.players.Select(swPlayer => Player.fromNetworkPlayer(swPlayer).SetPosition(PlayerDeckPositions[count++].position)).ToList();
+                List<Player> players = reply.players.Select(swPlayer =>
+                    Player.fromNetworkPlayer(swPlayer).SetPosition(PlayerDeckPositions[count++].position)).ToList();
 
                 players.Find(p => p.PlayerId == NetworkClient.Instance.PlayerId).IsLocal = true;
 
-                if (CardsData == null || CardsData.Cards == null || CardsData.Cards.Count == 0)
-                {
-                    CardsData = new CardsScriptableObject();
-                    CardsData.LoadCachedData();
-                }
+                gameDataManager = new GameDataManager(players, NetworkClient.Lobby.RoomId);
 
-                gameDataManager = new GameDataManager(players, CardsData.Cards, NetworkClient.Lobby.RoomId);
                 netCode.EnableRoomPropertyAgent();
                 
-                OnGameStateChange(EGameState.IDLE);
+                if (!NetworkClient.Instance.IsHost)
+                {
+                    if (CardsData == null || CardsData.Cards == null || CardsData.Cards.Count == 0)
+                    {
+                        CardsData = new CardsScriptableObject();
+                        CardsData.LoadCachedData();
+                    }
+                    gameDataManager.SetClientCards(CardsData.Cards);
+                }
             }
             else
             {
@@ -39,8 +43,21 @@ public class MultiplayerGameLogic : GameLogic
             }
         });
     }
-    
-    
+
+    protected override void StartGame()
+    {
+        if (NetworkClient.Instance.IsHost)
+        {
+            base.StartGame();
+        }
+        else
+        {
+            gui.HandleHide();
+            RedrawGameGrid();
+            OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action
+        }
+    }
+
     //****************** NetCode Events *********************//
     public void OnGameDataReady(EncryptedData encryptedData)
     {
@@ -49,8 +66,13 @@ public class MultiplayerGameLogic : GameLogic
             Debug.Log("New game");
             if (NetworkClient.Instance.IsHost)
             {
-                //currState = EGameState.GAME_START;
-                //gameDataManager.SetGameState(EGameState.GAME_START);
+                if (CardsData == null || CardsData.Cards == null || CardsData.Cards.Count == 0)
+                {
+                    CardsData = new CardsScriptableObject();
+                    CardsData.LoadCachedData();
+                }
+                gameDataManager.SetHostCards(CardsData.Cards);
+                
                 OnGameStateChange(EGameState.GAME_START);
 
                 netCode.ModifyGameData(gameDataManager.EncryptedData());
@@ -66,15 +88,14 @@ public class MultiplayerGameLogic : GameLogic
     public void OnGameDataChanged(EncryptedData encryptedData)
     {
         gameDataManager.ApplyEncrptedData(encryptedData);
-        //EGameState currState = gameDataManager.GetGameState();
-        //currentTurnTargetPlayer = gameDataManager.GetCurrentTurnTargetPlayer();
-        //OnGameStateChange(currState);
+        gameDataManager.UpdatePlayerRoleAndFrags();
         GameFlow();
+        RedrawGameGrid();
     }
 
     public void OnGameStateChanged()
     {
-        base.GameFlow();
+        GameFlow();
     }
 
     public void OnOppoentConfirmed()

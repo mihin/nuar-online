@@ -12,7 +12,7 @@ EditorBuildSettings:
     path: Assets/scenes/NuarMultiplayer.unity
     guid: 01324712a81014acb9ab6b4977ef770d
   - enabled: 1
-    path: Assets/scenes/testScene.unity
+    path: Assets/scenes/Nuar.unity
     guid: f11fcae471132467cb6889f3ae68e6c5
   - enabled: 0
     path: Assets/SWExample/Scenes/GameScene.unity
