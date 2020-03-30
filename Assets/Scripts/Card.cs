@@ -13,8 +13,8 @@ public enum CardState
 [Serializable]
 public class Card
 {
-    [SerializeField] public byte id;
     [SerializeField] public string name;
+    [SerializeField] public byte id;
     [SerializeField] public Sprite sprite;
 
     public class Factory : PlaceholderFactory<Card>

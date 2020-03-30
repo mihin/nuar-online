@@ -45,7 +45,7 @@ public class GameLogic : MonoBehaviour
         MAX_PLAYERS = Mathf.Min(PlayerDeckPositions.Count, MAX_PLAYERS);
         playersGridPos = new Dictionary<int, Vector2>(MAX_PLAYERS);
 
-        InitGameData();
+        gui.HandleGameInit();
     }
 
     void Start()
@@ -89,7 +89,7 @@ public class GameLogic : MonoBehaviour
         }
         gameDataManager.SetHostCards(CardsData.Cards);
 
-        OnGameStateChange(EGameState.IDLE);    // TODO move waiting for Start button to Lobby
+        OnGameStateChange(EGameState.IDLE, true);    // TODO move waiting for Start button to Lobby
     }
 
     protected void GameFlow()
@@ -155,7 +155,7 @@ public class GameLogic : MonoBehaviour
 
     void GameStartClickHandler()
     {
-        OnGameStateChange(EGameState.GAME_START); // wait curr player to choose action
+        StartGame();
     }
     void ShootChosenHandler()
     {
@@ -316,6 +316,7 @@ public class GameLogic : MonoBehaviour
 
     protected virtual void StartGame()
     {
+        InitGameData();
         gui.HandleHide();
         HandoutRoles();
         OnGameStateChange(EGameState.TURN_IDLE); // wait curr player to choose action

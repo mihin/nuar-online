@@ -235,7 +235,7 @@ namespace GoFish
         public void OnPracticeClicked()
         {
             Debug.Log("OnPracticeClicked");
-            SceneManager.LoadScene("testScene");
+            SceneManager.LoadScene("Nuar");
         }
 
         /// <summary>

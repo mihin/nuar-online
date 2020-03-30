@@ -57,6 +57,7 @@ namespace Pachik
         
         private byte[] InitCardsData(List<Card> allCards)
         {
+            DeadIds.Clear();
             List<Card> newCards = new List<Card>(allCards.Take(MAX_WIDTH * MAX_HEIGHT));
             newCards.Shuffle();
             // forming Deck
